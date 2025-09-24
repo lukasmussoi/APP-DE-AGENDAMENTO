@@ -24,7 +24,9 @@ export default defineNuxtConfig({
       'shared/utils/**',
       'app/shared/composables/**',
       'app/shared/utils/**',
-      'app/shared/stores/**'
+      'app/shared/stores/**',
+      'app/modules/*/composables',
+      'app/modules/*/utils'
     ]
   },
   
@@ -33,6 +35,10 @@ export default defineNuxtConfig({
     '~/shared/components',
     {
       path: '~/app/shared/components',
+      pathPrefix: false
+    },
+    {
+      path: '~/app/modules/*/components',
       pathPrefix: false
     }
   ]
