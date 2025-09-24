@@ -9,14 +9,17 @@
     <!-- Trigger Button -->
     <button
       @click="toggleDropdown"
-      class="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+      :class="[
+        'flex items-center rounded-lg hover:bg-gray-50 transition-colors',
+        props.isCollapsed ? 'justify-center p-2' : 'w-full space-x-3 p-3'
+      ]"
     >
       <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
         <span class="text-sm font-medium text-blue-600">
           {{ userInitials }}
         </span>
       </div>
-      <div class="flex-1 min-w-0 text-left">
+      <div v-if="!props.isCollapsed" class="flex-1 min-w-0 text-left">
         <p class="text-sm font-medium text-gray-900 truncate">
           {{ userName }}
         </p>
@@ -25,6 +28,7 @@
         </p>
       </div>
       <ChevronDownIcon
+        v-if="!props.isCollapsed"
         class="w-4 h-4 text-gray-400 transition-transform"
         :class="{ 'rotate-180': isOpen }"
       />
@@ -33,7 +37,10 @@
     <!-- Dropdown Menu -->
     <div
       v-if="isOpen"
-      class="absolute bottom-full left-0 w-full mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20"
+      :class="[
+        'absolute bottom-full mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20',
+        props.isCollapsed ? 'left-0 w-48' : 'left-0 w-full'
+      ]"
     >
       <!-- Perfil Button -->
       <button
@@ -76,11 +83,13 @@ interface Props {
     name?: string
   } | null
   onLogout?: () => Promise<void>
+  isCollapsed?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   user: null,
-  onLogout: async () => {}
+  onLogout: async () => {},
+  isCollapsed: false
 })
 
 // State

@@ -5,93 +5,172 @@
  */
 
 <template>
-  <aside class="fixed top-0 left-0 w-64 h-screen bg-white shadow-lg border-r border-gray-200 flex flex-col z-10">
-    <!-- Logo Section -->
-    <div class="p-6 border-b border-gray-200">
-      <NuxtLink to="/" class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-          <span class="text-white font-bold text-xl">A</span>
-        </div>
-        <div class="flex flex-col">
-          <span class="text-lg font-semibold text-gray-900">Agendamento</span>
-          <span class="text-xs text-gray-500">Sistema de Gestão</span>
-        </div>
-      </NuxtLink>
+  <aside
+    :class="[
+      'fixed top-0 left-0 h-screen bg-white shadow-lg border-r border-gray-200 flex flex-col z-10 transition-all duration-300 ease-in-out',
+      isCollapsed ? 'w-16' : 'w-64'
+    ]"
+  >
+    <!-- Header with Toggle Button -->
+    <div :class="[
+      'border-b border-gray-200 flex items-center',
+      isCollapsed ? 'p-2 justify-center' : 'p-4 justify-between'
+    ]">
+      <!-- Logo Section quando expandida -->
+      <div v-if="!isCollapsed" class="flex items-center space-x-3 flex-1">
+        <NuxtLink to="/" class="flex items-center space-x-3">
+          <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <span class="text-white font-bold text-lg">A</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-sm font-semibold text-gray-900">Agendamento</span>
+            <span class="text-xs text-gray-500">Sistema</span>
+          </div>
+        </NuxtLink>
+      </div>
+
+      <!-- Logo quando colapsada -->
+      <div v-if="isCollapsed" class="flex flex-col items-center space-y-2">
+        <NuxtLink to="/" class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold text-lg">A</span>
+        </NuxtLink>
+      </div>
+
+      <!-- Toggle Button -->
+      <button
+        v-if="!isCollapsed"
+        @click="toggleSidebar"
+        class="p-1 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0"
+        title="Recolher sidebar"
+      >
+        <ChevronLeftIcon class="w-5 h-5 text-gray-500" />
+      </button>
+
+      <!-- Toggle Button quando colapsada -->
+      <button
+        v-if="isCollapsed"
+        @click="toggleSidebar"
+        class="p-1 rounded-md hover:bg-gray-100 transition-colors mt-2"
+        title="Expandir sidebar"
+      >
+        <ChevronLeftIcon class="w-4 h-4 text-gray-500 rotate-180" />
+      </button>
     </div>
 
     <!-- Navigation Menu -->
-    <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+    <nav class="flex-1 px-3 py-6 space-y-2 overflow-y-auto">
       <!-- Dashboard -->
       <NuxtLink
         to="/"
-        class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+        :class="[
+          'flex items-center px-3 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors',
+          isCollapsed ? 'justify-center' : '',
+          'group'
+        ]"
         active-class="bg-blue-100 text-blue-800"
+        :title="isCollapsed ? 'Dashboard' : ''"
       >
-        <HomeIcon class="w-5 h-5 mr-3" />
-        Dashboard
+        <HomeIcon class="w-5 h-5 flex-shrink-0" :class="isCollapsed ? '' : 'mr-3'" />
+        <span v-if="!isCollapsed" class="transition-opacity duration-200">Dashboard</span>
       </NuxtLink>
 
       <!-- Especialidades -->
       <NuxtLink
         to="/especialidades"
-        class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+        :class="[
+          'flex items-center px-3 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors',
+          isCollapsed ? 'justify-center' : '',
+          'group'
+        ]"
         active-class="bg-blue-100 text-blue-800"
+        :title="isCollapsed ? 'Especialidades' : ''"
       >
-        <FolderIcon class="w-5 h-5 mr-3" />
-        Especialidades
+        <FolderIcon class="w-5 h-5 flex-shrink-0" :class="isCollapsed ? '' : 'mr-3'" />
+        <span v-if="!isCollapsed" class="transition-opacity duration-200">Especialidades</span>
       </NuxtLink>
 
       <!-- Agendamentos -->
       <NuxtLink
         to="/agendamentos"
-        class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+        :class="[
+          'flex items-center px-3 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors',
+          isCollapsed ? 'justify-center' : '',
+          'group'
+        ]"
         active-class="bg-blue-100 text-blue-800"
+        :title="isCollapsed ? 'Agendamentos' : ''"
       >
-        <CalendarDaysIcon class="w-5 h-5 mr-3" />
-        Agendamentos
+        <CalendarDaysIcon class="w-5 h-5 flex-shrink-0" :class="isCollapsed ? '' : 'mr-3'" />
+        <span v-if="!isCollapsed" class="transition-opacity duration-200">Agendamentos</span>
       </NuxtLink>
 
       <!-- Clientes -->
       <NuxtLink
         to="/clientes"
-        class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+        :class="[
+          'flex items-center px-3 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors',
+          isCollapsed ? 'justify-center' : '',
+          'group'
+        ]"
         active-class="bg-blue-100 text-blue-800"
+        :title="isCollapsed ? 'Clientes' : ''"
       >
-        <UsersIcon class="w-5 h-5 mr-3" />
-        Clientes
+        <UsersIcon class="w-5 h-5 flex-shrink-0" :class="isCollapsed ? '' : 'mr-3'" />
+        <span v-if="!isCollapsed" class="transition-opacity duration-200">Clientes</span>
       </NuxtLink>
 
       <!-- Profissionais -->
       <NuxtLink
         to="/profissionais"
-        class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+        :class="[
+          'flex items-center px-3 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors',
+          isCollapsed ? 'justify-center' : '',
+          'group'
+        ]"
         active-class="bg-blue-100 text-blue-800"
+        :title="isCollapsed ? 'Profissionais' : ''"
       >
-        <BriefcaseIcon class="w-5 h-5 mr-3" />
-        Profissionais
+        <BriefcaseIcon class="w-5 h-5 flex-shrink-0" :class="isCollapsed ? '' : 'mr-3'" />
+        <span v-if="!isCollapsed" class="transition-opacity duration-200">Profissionais</span>
       </NuxtLink>
     </nav>
 
     <!-- User Menu Dropdown -->
-    <div class="p-4 border-t border-gray-200">
-      <MenuDropdown :user="user" :on-logout="handleLogout" />
+    <div class="p-3 border-t border-gray-200">
+      <MenuDropdown :user="user" :on-logout="handleLogout" :is-collapsed="isCollapsed" />
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useAuth } from '../../composables/useAuth'
 import {
   HomeIcon,
   FolderIcon,
   CalendarDaysIcon,
   UsersIcon,
-  BriefcaseIcon
+  BriefcaseIcon,
+  ChevronLeftIcon
 } from '@heroicons/vue/24/outline'
 import MenuDropdown from '../ui/MenuDropdown.vue'
 
+// Emits
+const emit = defineEmits<{
+  toggle: [collapsed: boolean]
+}>()
+
 // Auth composable
 const { user, logout } = useAuth()
+
+// Sidebar state
+const isCollapsed = ref(false)
+
+// Toggle sidebar function
+const toggleSidebar = () => {
+  isCollapsed.value = !isCollapsed.value
+  emit('toggle', isCollapsed.value)
+}
 
 // Função de logout
 const handleLogout = async () => {
