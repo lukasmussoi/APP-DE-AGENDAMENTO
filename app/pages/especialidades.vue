@@ -1,12 +1,12 @@
 /**
- * PROPÓSITO: Página inicial do dashboard
+ * PROPÓSITO: Página de especialidades
  * IMPORTA: Nenhum
- * USADO_POR: Rota /
+ * USADO_POR: Rota /especialidades
  */
 
 <template>
   <div>
-    <h1>Dashboard</h1>
+    <h1>Especialidades</h1>
   </div>
 </template>
 

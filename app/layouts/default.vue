@@ -15,9 +15,6 @@
       <div class="flex-1 p-6 overflow-auto">
         <slot />
       </div>
-
-      <!-- Footer -->
-      <Footer />
     </main>
   </div>
 </template>
@@ -27,7 +24,6 @@ import { ref } from 'vue'
 
 // Importar componentes de layout
 import Sidebar from '../shared/components/layout/Sidebar.vue'
-import Footer from '../shared/components/layout/Footer.vue'
 
 // Estado da sidebar
 const isSidebarCollapsed = ref(false)
