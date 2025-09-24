@@ -20,8 +20,8 @@
         :class="inputClasses"
         :style="{ paddingLeft: startIcon ? '2.5rem' : '0.75rem', paddingRight: endIcon ? '2.5rem' : '0.75rem' }"
       />
-      <div v-if="endIcon" class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-        <component :is="endIcon" class="h-5 w-5 text-neutral-400" />
+      <div v-if="endIcon" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+        <component :is="endIcon" class="h-5 w-5 text-neutral-400 cursor-pointer hover:text-neutral-600" @click="onEndIconClick" />
       </div>
     </div>
     <p v-if="help" class="text-xs text-neutral-500 mt-1">{{ help }}</p>
@@ -50,11 +50,15 @@ const inputClasses = computed(() => {
   return [base, focus, disabled].filter(Boolean).join(' ')
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'end-icon-click'])
 
 function onInput(e: Event) {
   const target = e.target as HTMLInputElement | null
   if (!target) return
   emit('update:modelValue', target.value)
+}
+
+function onEndIconClick() {
+  emit('end-icon-click')
 }
 </script>
