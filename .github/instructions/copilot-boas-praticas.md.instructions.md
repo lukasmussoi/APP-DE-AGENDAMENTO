@@ -7,3 +7,5 @@
 
     - Se você não sabe se o código que você escreveu é uma boa prática, pesquise a documentação oficial da linguagem ou framework que você está utilizando usando o MCP do Context7.
 
+## **ICONES DA BIBLIOTECA**
+ -  Sempre utilize icones da biblioteca instalada no projeto, não fique criando icones svg se existe uma biblioteca instalada para isso.

@@ -72,41 +72,14 @@
       </NuxtLink>
     </nav>
 
-    <!-- User Info & Logout -->
+    <!-- User Menu Dropdown -->
     <div class="p-4 border-t border-gray-200">
-      <div class="flex items-center space-x-3 mb-3">
-        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-          <span class="text-sm font-medium text-blue-600">
-            {{ userInitials }}
-          </span>
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-gray-900 truncate">
-            {{ user?.email?.split('@')[0] || 'Usuário' }}
-          </p>
-          <p class="text-xs text-gray-500 truncate">
-            {{ user?.email || '' }}
-          </p>
-        </div>
-      </div>
-
-      <button
-        @click="handleLogout"
-        class="w-full flex items-center px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors"
-        :disabled="isLoggingOut"
-      >
-        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-        </svg>
-        <span v-if="isLoggingOut">Saindo...</span>
-        <span v-else>Sair</span>
-      </button>
+      <MenuDropdown :user="user" :on-logout="handleLogout" />
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
 import { useAuth } from '../../composables/useAuth'
 import {
   HomeIcon,
@@ -115,29 +88,17 @@ import {
   UsersIcon,
   BriefcaseIcon
 } from '@heroicons/vue/24/outline'
+import MenuDropdown from '../ui/MenuDropdown.vue'
 
 // Auth composable
 const { user, logout } = useAuth()
-const isLoggingOut = ref(false)
-
-// Computed para iniciais do usuário
-const userInitials = computed(() => {
-  const email = user.value?.email
-  if (!email) return 'U'
-
-  const name = email.split('@')[0]
-  return name ? name.charAt(0).toUpperCase() : 'U'
-})
 
 // Função de logout
 const handleLogout = async () => {
   try {
-    isLoggingOut.value = true
     await logout()
   } catch (error) {
     console.error('Erro ao fazer logout:', error)
-  } finally {
-    isLoggingOut.value = false
   }
 }
 </script>
