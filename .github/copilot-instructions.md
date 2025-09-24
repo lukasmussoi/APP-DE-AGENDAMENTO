@@ -306,6 +306,21 @@ Todos os arquivos iniciam com 3–6 linhas:
 
 - **Regra crítica**: NUNCA implementar sem consultar Context7 - isso evita decisões baseadas em conhecimento desatualizado
 
+## Gerenciamento de Arquivos
+
+**Política de Remoção de Arquivos (OBRIGATÓRIA):**
+- **NUNCA delete arquivos diretamente** por qualquer motivo
+- **SEMPRE siga este fluxo para "remover" arquivos:**
+  1. Criar diretório `.lixo` na raiz do projeto (se não existir)
+  2. Mover o arquivo para `.lixo/`
+  3. Renomear para `OLD-NOMEDOARQUIVO` (ex: `OLD-Header.vue`, `OLD-useAuth.ts`)
+- **Motivo:** Preservar histórico e permitir consulta posterior se necessário
+- **Exemplo de comandos:**
+  ```bash
+  mkdir .lixo
+  mv app/components/Header.vue .lixo/OLD-Header.vue
+  ```
+
 ## Pontos de atenção rápidos
 - Use UTC no backend; converta no frontend
 - Componentes que usam browser APIs devem ser `.client.vue` ou envolver `<client-only>`
