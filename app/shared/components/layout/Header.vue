@@ -45,12 +45,28 @@
 
         <!-- Actions -->
         <div class="flex items-center space-x-4">
-          <Button variant="outline" size="sm">
-            Login
-          </Button>
-          <Button size="sm">
-            Cadastro
-          </Button>
+          <!-- Quando não está autenticado -->
+          <template v-if="!isAuthenticated">
+            <Button variant="outline" size="sm" @click="goToLogin">
+              Login
+            </Button>
+            <Button size="sm">
+              Cadastro
+            </Button>
+          </template>
+
+          <!-- Quando está autenticado -->
+          <template v-else>
+            <div class="flex items-center space-x-3">
+              <span class="text-sm text-gray-700">
+                Olá, {{ user?.email?.split('@')[0] }}
+              </span>
+              <Button variant="outline" size="sm" @click="handleLogout" :disabled="isLoggingOut">
+                <span v-if="isLoggingOut">Saindo...</span>
+                <span v-else>Sair</span>
+              </Button>
+            </div>
+          </template>
         </div>
 
         <!-- Mobile menu button -->
@@ -101,5 +117,28 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useAuth } from '../../composables/useAuth'
+
 const isMobileMenuOpen = ref(false)
+
+// Auth composable
+const { isAuthenticated, user, logout } = useAuth()
+const isLoggingOut = ref(false)
+
+// Funções de navegação
+const goToLogin = () => {
+  navigateTo('/login')
+}
+
+const handleLogout = async () => {
+  try {
+    isLoggingOut.value = true
+    await logout()
+  } catch (error) {
+    console.error('Erro ao fazer logout:', error)
+  } finally {
+    isLoggingOut.value = false
+  }
+}
 </script>

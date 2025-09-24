@@ -1,39 +1,40 @@
 /**
  * PROPÓSITO: Página inicial simples da aplicação de agendamento
- * IMPORTA: Vue 3 Composition API
+ * IMPORTA: Componentes de layout e Vue 3 Composition API
  * USADO_POR: Rota / da aplicação
  */
 
 <template>
   <div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <Header />
+
     <!-- Hero Section -->
     <section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
         <div class="text-center">
           <h1 class="text-4xl lg:text-6xl font-bold mb-6">
-            Sistema de 
+            Sistema de
             <span class="text-blue-200">Agendamento</span>
           </h1>
-          
+
           <p class="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
             Gerencie seus compromissos, clientes e horários de forma simples e eficiente.
             Tudo em uma única plataforma intuitiva.
           </p>
-          
+
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <button class="bg-white text-blue-600 hover:bg-gray-50 px-8 py-3 rounded-lg font-semibold text-lg transition-colors">
               Começar Agora
             </button>
-            
+
             <button class="border-2 border-white text-white hover:bg-blue-700 px-8 py-3 rounded-lg font-semibold text-lg transition-colors">
               Ver Demo
             </button>
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- Stats Section -->
+    </section>    <!-- Stats Section -->
     <section class="py-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
@@ -304,22 +305,12 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 text-white">
-      <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <h3 class="text-2xl font-bold mb-4">Sistema de Agendamento</h3>
-          <p class="text-gray-300 mb-8">
-            A solução completa para gerenciar seus agendamentos
-          </p>
-          <p class="text-sm text-gray-400">
-            © 2025 Sistema de Agendamento. Todos os direitos reservados.
-          </p>
-        </div>
-      </div>
-    </footer>
+    <Footer />
   </div>
 </template>
 
 <script setup lang="ts">
-// Página inicial simples - sem lógica complexa por enquanto
+// Importar componentes de layout
+import Header from '../shared/components/layout/Header.vue'
+import Footer from '../shared/components/layout/Footer.vue'
 </script>
