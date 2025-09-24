@@ -71,4 +71,9 @@
 
 <script setup lang="ts">
 import LoginForm from '../shared/components/ui/LoginForm.vue'
+
+// Layout vazio para login (sem sidebar/header)
+definePageMeta({
+  layout: false
+})
 </script>
