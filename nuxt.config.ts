@@ -2,7 +2,11 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: false },
-  modules: ['@nuxtjs/tailwindcss', '@nuxtjs/supabase', '@nuxtjs/heroicons'],
+  modules: [
+    '@nuxtjs/tailwindcss',
+    '@nuxtjs/supabase',
+    '@pinia/nuxt'
+  ],
   
   // Configuração Tailwind para usar nosso arquivo CSS
   tailwindcss: {
@@ -19,7 +23,8 @@ export default defineNuxtConfig({
       'shared/composables/**',
       'shared/utils/**',
       'app/shared/composables/**',
-      'app/shared/utils/**'
+      'app/shared/utils/**',
+      'app/shared/stores/**'
     ]
   },
   
