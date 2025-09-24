@@ -208,9 +208,21 @@ Todos os arquivos iniciam com 3–6 linhas:
 - **Regra**: Se o usuário pedir explicitamente para executar comandos Git/GitHub, o agente DEVE fazer
 
 ## MCP Context7 (obrigatório ao perder contexto / iniciar chat)
-- Fluxo obrigatório antes de mudanças de framework:
-  1) `mcp_context7_resolve-library-id("nuxt")`
-  2) `mcp_context7_get-library-docs("/nuxt/nuxt", topic="components" | "config" | "ssr")`
+- **SEMPRE** consultar documentação atualizada de TODAS as tecnologias ativas no sistema
+- Fluxo obrigatório antes de implementar qualquer mudança:
+  1) Identificar tecnologias ativas no projeto (package.json, nuxt.config.ts, etc.)
+  2) Para cada tecnologia encontrada:
+     - `mcp_context7_resolve-library-id("[tecnologia]")`
+     - `mcp_context7_get-library-docs("[library-id]", topic="relevante")`
+  
+- **Tecnologias que SEMPRE devem ser consultadas**:
+  - Nuxt 4: `mcp_context7_get-library-docs("/nuxt/nuxt", topic="components" | "config" | "ssr")`
+  - Tailwind CSS: `mcp_context7_get-library-docs("/websites/tailwindcss", topic="configuration" | "components")`
+  - Vue 3: `mcp_context7_get-library-docs("[vue-id]", topic="composition-api" | "components")`
+  - TypeScript: `mcp_context7_get-library-docs("[typescript-id]", topic="types" | "configuration")`
+  - Pinia (se encontrado): `mcp_context7_get-library-docs("[pinia-id]", topic="stores" | "composition")`
+
+- **Regra crítica**: NUNCA implementar sem consultar Context7 - isso evita decisões baseadas em conhecimento desatualizado e "cagadas"
 
 ## Pontos de atenção rápidos
 - Use UTC no backend; converta no frontend
