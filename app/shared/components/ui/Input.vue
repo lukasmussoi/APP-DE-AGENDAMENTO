@@ -5,13 +5,13 @@
  */
 <template>
   <div class="w-full">
-    <label v-if="label" :for="id" class="block text-sm font-medium text-neutral-700 mb-1">{{ label }}</label>
+    <label v-if="label" :for="id || undefined" class="block text-sm font-medium text-neutral-700 mb-1">{{ label }}</label>
     <div class="relative">
       <div v-if="startIcon" class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
         <component :is="startIcon" class="h-5 w-5 text-neutral-400" />
       </div>
       <input
-        :id="id"
+        :id="id || undefined"
         :type="type"
         :value="modelValue"
         @input="onInput"
@@ -33,7 +33,7 @@ import { computed } from 'vue'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
-  id: { type: String, default: () => `input-${Math.random().toString(36).substr(2, 9)}` },
+  id: { type: String, default: '' },
   label: { type: String, default: '' },
   placeholder: { type: String, default: '' },
   help: { type: String, default: '' },

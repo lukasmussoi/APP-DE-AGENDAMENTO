@@ -17,6 +17,7 @@
       <div>
         <Input
           v-model="email"
+          id="email"
           label="Email"
           type="email"
           placeholder="seu@email.com"
@@ -30,6 +31,7 @@
       <div>
         <Input
           v-model="password"
+          id="password"
           label="Senha"
           :type="showPassword ? 'text' : 'password'"
           placeholder="Digite sua senha"
