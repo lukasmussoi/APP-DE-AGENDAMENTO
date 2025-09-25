@@ -100,6 +100,43 @@ export const useProfissionais = () => {
     }
   }
 
+  // Função para atualizar especialidade
+  const updateEspecialidade = async (id: number, especialidade: string): Promise<RpcResponse> => {
+    // Guard: Evitar execuções simultâneas
+    if (inserting.value) return { success: false, message: 'Operação já em andamento' }
+
+    try {
+      inserting.value = true
+      error.value = null
+
+      const { data, error: updateError } = await supabase
+        .rpc('ag_editar_especialidade_admin', {
+          p_id: id,
+          p_especialidade: especialidade
+        })
+
+      if (updateError) throw updateError
+
+      const result = data as RpcResponse
+
+      // Verificar se a operação foi bem-sucedida baseado no retorno JSONB
+      if (!result.success) {
+        throw new Error(result.message || 'Erro ao editar especialidade')
+      }
+
+      // Recarregar especialidades após atualização
+      await fetchEspecialidades()
+
+      return result
+    } catch (err: any) {
+      error.value = err.message
+      console.error('Erro ao editar especialidade:', err)
+      throw err
+    } finally {
+      inserting.value = false
+    }
+  }
+
   return {
     // Estado
     especialidades,
@@ -110,6 +147,7 @@ export const useProfissionais = () => {
     // Actions
     fetchEspecialidades,
     fetchEspecialidadeById,
-    insertEspecialidade
+    insertEspecialidade,
+    updateEspecialidade
   }
 }

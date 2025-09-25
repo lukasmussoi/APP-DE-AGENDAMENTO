@@ -74,40 +74,45 @@
         <p class="text-sm text-neutral-500">
           Total: {{ especialidades.length }} especialidade{{ especialidades.length !== 1 ? 's' : '' }}
         </p>
-        <Button v-if="profileStore.currentProfile?.role === 'admin'" @click="addEspecialidade">
-          Nova Especialidade
-        </Button>
+        <ClientOnly>
+          <Button v-if="profileStore.currentProfile?.role === 'admin'" @click="addEspecialidade">
+            Nova Especialidade
+          </Button>
+        </ClientOnly>
       </div>
     </template>
   </Card>
 
-  <!-- Modal para adicionar nova especialidade -->
-  <Modal
-    v-model="showAddModal"
-    title="Nova Especialidade"
-    confirm-text="Salvar"
-    cancel-text="Cancelar"
-    :loading="inserting"
-    @confirm="handleSaveEspecialidade"
-    @cancel="handleCancelEspecialidade"
-  >
-    <div class="space-y-4">
-      <div>
-        <label for="especialidade" class="block text-sm font-medium text-neutral-700 mb-2">
-          Nome da Especialidade
-        </label>
-        <Input
-          id="especialidade"
-          v-model="novaEspecialidade"
-          placeholder="Digite o nome da especialidade"
-          @keyup.enter="handleSaveEspecialidade"
-        />
-        <p v-if="formError" class="mt-1 text-sm text-red-600">
-          {{ formError }}
-        </p>
+  <!-- Modal para adicionar/editar especialidade -->
+  <ClientOnly>
+    <Modal
+      v-model="showAddModal"
+      :title="isEdicao ? 'Editar Especialidade' : 'Nova Especialidade'"
+      confirm-text="Salvar"
+      cancel-text="Cancelar"
+      :loading="inserting"
+      :is-edicao="isEdicao"
+      @confirm="handleSaveEspecialidade"
+      @cancel="handleCancelEspecialidade"
+    >
+      <div class="space-y-4">
+        <div>
+          <label for="especialidade" class="block text-sm font-medium text-neutral-700 mb-2">
+            Nome da Especialidade
+          </label>
+          <Input
+            id="especialidade"
+            v-model="novaEspecialidade"
+            placeholder="Digite o nome da especialidade"
+            @keyup.enter="handleSaveEspecialidade"
+          />
+          <p v-if="formError" class="mt-1 text-sm text-red-600">
+            {{ formError }}
+          </p>
+        </div>
       </div>
-    </div>
-  </Modal>
+    </Modal>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
@@ -127,7 +132,7 @@ import Modal from '../../../shared/components/ui/Modal.vue'
 import Input from '../../../shared/components/ui/Input.vue'
 
 // Composable
-const { especialidades, loading, error, fetchEspecialidades, inserting, insertEspecialidade } = useProfissionais()
+const { especialidades, loading, error, fetchEspecialidades, inserting, insertEspecialidade, updateEspecialidade } = useProfissionais()
 
 // Store de perfil
 const profileStore = useProfileStore()
@@ -142,6 +147,8 @@ const showAddModal = ref(false)
 // Estado do formulário
 const novaEspecialidade = ref('')
 const formError = ref<string | null>(null)
+const isEdicao = ref(false)
+const especialidadeEditando = ref<Especialidade | null>(null)
 
 // Configuração das colunas
 const columns = [
@@ -185,7 +192,11 @@ const handleRowClick = (especialidade: Especialidade) => {
 }
 
 const editEspecialidade = (especialidade: Especialidade) => {
-  console.log('Editar especialidade:', especialidade)
+  isEdicao.value = true
+  especialidadeEditando.value = especialidade
+  novaEspecialidade.value = especialidade.especialidade
+  formError.value = null
+  showAddModal.value = true
 }
 
 const deleteEspecialidade = (especialidade: Especialidade) => {
@@ -193,6 +204,10 @@ const deleteEspecialidade = (especialidade: Especialidade) => {
 }
 
 const addEspecialidade = () => {
+  isEdicao.value = false
+  especialidadeEditando.value = null
+  novaEspecialidade.value = ''
+  formError.value = null
   showAddModal.value = true
 }
 
@@ -205,11 +220,20 @@ const handleSaveEspecialidade = async () => {
 
   try {
     formError.value = null
-    await insertEspecialidade(novaEspecialidade.value.trim())
+
+    if (isEdicao.value && especialidadeEditando.value) {
+      // Modo edição
+      await updateEspecialidade(especialidadeEditando.value.id, novaEspecialidade.value.trim())
+    } else {
+      // Modo inserção
+      await insertEspecialidade(novaEspecialidade.value.trim())
+    }
     
     // Fechar modal e limpar formulário
     showAddModal.value = false
     novaEspecialidade.value = ''
+    isEdicao.value = false
+    especialidadeEditando.value = null
   } catch (err: any) {
     formError.value = err.message || 'Erro ao salvar especialidade'
   }
@@ -219,6 +243,8 @@ const handleCancelEspecialidade = () => {
   showAddModal.value = false
   novaEspecialidade.value = ''
   formError.value = null
+  isEdicao.value = false
+  especialidadeEditando.value = null
 }
 
 // Carregar dados ao montar o componente

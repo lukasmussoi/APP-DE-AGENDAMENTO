@@ -124,6 +124,7 @@ interface ModalProps {
   closableBackdrop?: boolean
   loading?: boolean
   contentClass?: string
+  isEdicao?: boolean
 }
 
 const props = withDefaults(defineProps<ModalProps>(), {
@@ -135,7 +136,8 @@ const props = withDefaults(defineProps<ModalProps>(), {
   cancelText: 'Cancelar',
   closableBackdrop: true,
   loading: false,
-  contentClass: ''
+  contentClass: '',
+  isEdicao: false
 })
 
 const emit = defineEmits<{
