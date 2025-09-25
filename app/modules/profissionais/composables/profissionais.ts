@@ -137,6 +137,35 @@ export const useProfissionais = () => {
     }
   }
 
+  // Função para deletar especialidade
+  const deleteEspecialidade = async (id: number): Promise<boolean> => {
+    // Guard: Evitar execuções simultâneas
+    if (inserting.value) return false
+
+    try {
+      inserting.value = true
+      error.value = null
+
+      const { error: deleteError } = await supabase
+        .from('ag_especialidades')
+        .delete()
+        .eq('id', id)
+
+      if (deleteError) throw deleteError
+
+      // Recarregar especialidades após exclusão
+      await fetchEspecialidades()
+
+      return true
+    } catch (err: any) {
+      error.value = err.message
+      console.error('Erro ao deletar especialidade:', err)
+      throw err
+    } finally {
+      inserting.value = false
+    }
+  }
+
   return {
     // Estado
     especialidades,
@@ -148,6 +177,7 @@ export const useProfissionais = () => {
     fetchEspecialidades,
     fetchEspecialidadeById,
     insertEspecialidade,
-    updateEspecialidade
+    updateEspecialidade,
+    deleteEspecialidade
   }
 }

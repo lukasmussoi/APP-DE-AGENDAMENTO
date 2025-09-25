@@ -58,7 +58,7 @@
                 <Button 
                   size="sm" 
                   variant="danger"
-                  @click.stop="deleteEspecialidade(especialidade)"
+                  @click.stop="handleDeleteClick(especialidade)"
                 >
                   Excluir
                 </Button>
@@ -113,6 +113,39 @@
       </div>
     </Modal>
   </ClientOnly>
+
+  <!-- Modal de confirmação de exclusão -->
+  <ClientOnly>
+    <Modal
+      :model-value="showDeleteModal"
+      title="Confirmar Exclusão"
+      confirm-text="Excluir"
+      cancel-text="Cancelar"
+      variant="danger"
+      :loading="isDeleting"
+      @confirm="handleConfirmDelete"
+      @update:model-value="showDeleteModal = $event"
+    >
+      <div class="space-y-4">
+        <div class="flex items-center space-x-3">
+          <div class="flex-shrink-0">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-sm font-medium text-gray-900">
+              Tem certeza que deseja excluir esta especialidade?
+            </h3>
+            <p v-if="especialidadeToDelete" class="mt-1 text-sm text-gray-600">
+              A especialidade "<strong>{{ especialidadeToDelete.especialidade }}</strong>" será removida permanentemente.
+              Esta ação não pode ser desfeita.
+            </p>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
@@ -132,7 +165,7 @@ import Modal from '../../../shared/components/ui/Modal.vue'
 import Input from '../../../shared/components/ui/Input.vue'
 
 // Composable
-const { especialidades, loading, error, fetchEspecialidades, inserting, insertEspecialidade, updateEspecialidade } = useProfissionais()
+const { especialidades, loading, error, fetchEspecialidades, inserting, insertEspecialidade, updateEspecialidade, deleteEspecialidade } = useProfissionais()
 
 // Store de perfil
 const profileStore = useProfileStore()
@@ -143,6 +176,11 @@ const sortDirection = ref<'asc' | 'desc'>('asc')
 
 // Estado do modal
 const showAddModal = ref(false)
+
+// Estado do modal de confirmação de exclusão
+const showDeleteModal = ref(false)
+const especialidadeToDelete = ref<Especialidade | null>(null)
+const isDeleting = ref(false)
 
 // Estado do formulário
 const novaEspecialidade = ref('')
@@ -199,8 +237,9 @@ const editEspecialidade = (especialidade: Especialidade) => {
   showAddModal.value = true
 }
 
-const deleteEspecialidade = (especialidade: Especialidade) => {
-  console.log('Excluir especialidade:', especialidade)
+const handleDeleteClick = (especialidade: Especialidade) => {
+  especialidadeToDelete.value = especialidade
+  showDeleteModal.value = true
 }
 
 const addEspecialidade = () => {
@@ -245,6 +284,36 @@ const handleCancelEspecialidade = () => {
   formError.value = null
   isEdicao.value = false
   especialidadeEditando.value = null
+}
+
+// Handlers para exclusão
+const handleConfirmDelete = async () => {
+  if (!especialidadeToDelete.value || isDeleting.value) return
+
+  // Armazenar o nome antes de deletar para evitar problemas de referência
+  const nomeEspecialidade = especialidadeToDelete.value.especialidade
+  isDeleting.value = true
+
+  try {
+    await deleteEspecialidade(especialidadeToDelete.value.id)
+    
+    // Exibir toast de sucesso
+    const { $toast } = useNuxtApp()
+    $toast.success(`Especialidade "${nomeEspecialidade}" excluída com sucesso!`)
+    
+    showDeleteModal.value = false
+    especialidadeToDelete.value = null
+  } catch (err: any) {
+    console.error('Erro ao deletar especialidade:', err)
+    
+    // Exibir toast de erro
+    const { $toast } = useNuxtApp()
+    $toast.error('Erro ao excluir especialidade. Tente novamente.')
+    
+    // Não limpar o estado em caso de erro para permitir tentar novamente
+  } finally {
+    isDeleting.value = false
+  }
 }
 
 // Carregar dados ao montar o componente
