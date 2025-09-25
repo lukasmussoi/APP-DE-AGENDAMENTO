@@ -34,11 +34,11 @@ export default defineNuxtConfig({
   components: [
     '~/shared/components',
     {
-      path: '~/app/shared/components',
+      path: './app/shared/components/**',
       pathPrefix: false
     },
     {
-      path: '~/app/modules/*/components',
+      path: './app/modules/*/components',
       pathPrefix: false
     }
   ]

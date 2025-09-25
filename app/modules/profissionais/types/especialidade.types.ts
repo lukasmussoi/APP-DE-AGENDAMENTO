@@ -13,3 +13,15 @@ export interface RpcResponse {
   success: boolean
   message: string
 }
+
+export interface Profissional {
+  id: number
+  nome: string
+  especialidade: string
+}
+
+export interface RpcResponseProfissionais {
+  data: Profissional[]
+  message: string
+  success: boolean
+}

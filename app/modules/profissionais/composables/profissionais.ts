@@ -4,13 +4,14 @@
  * USADO_POR: Componentes e páginas relacionadas a profissionais
  */
 
-import type { Especialidade, RpcResponse } from '../types/especialidade.types'
+import type { Especialidade, RpcResponse, Profissional, RpcResponseProfissionais } from '../types/especialidade.types'
 
 export const useProfissionais = () => {
   const supabase = useSupabaseClient()
 
   // Estado reativo
   const especialidades = ref<Especialidade[]>([])
+  const profissionais = ref<Profissional[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
   const inserting = ref(false)
@@ -166,9 +167,60 @@ export const useProfissionais = () => {
     }
   }
 
+  // Função para buscar profissionais
+  const fetchProfissionais = async () => {
+    // Guard: Evitar execuções simultâneas
+    if (loading.value) return
+
+    try {
+      loading.value = true
+      error.value = null
+
+      const { data, error: fetchError } = await supabase.rpc('ag_listar_profissionais_admin') as { data: any, error: any }
+
+      if (fetchError) throw fetchError
+
+      // Processar o retorno da RPC - tentar diferentes estruturas possíveis
+      let response: RpcResponseProfissionais | null = null
+
+      if (Array.isArray(data) && data.length > 0) {
+        // Se é array, pode ser data[0]['ag_listar_profissionais_admin'] ou data[0] diretamente
+        if (data[0]['ag_listar_profissionais_admin']) {
+          response = data[0]['ag_listar_profissionais_admin'] as RpcResponseProfissionais
+        } else {
+          response = data[0] as RpcResponseProfissionais
+        }
+      } else if (data && typeof data === 'object') {
+        // Se é objeto, pode ser data['ag_listar_profissionais_admin'] ou data diretamente
+        if (data['ag_listar_profissionais_admin']) {
+          response = data['ag_listar_profissionais_admin'] as RpcResponseProfissionais
+        } else {
+          response = data as RpcResponseProfissionais
+        }
+      }
+
+      if (response && response.success) {
+        profissionais.value = response.data || []
+        console.log('Profissionais carregados:', profissionais.value)
+      } else if (response) {
+        throw new Error(response.message || 'Erro ao buscar profissionais')
+      } else {
+        // Se não conseguiu parsear, assumir array vazio
+        profissionais.value = []
+        console.warn('Não foi possível parsear a resposta da RPC:', data)
+      }
+    } catch (err: any) {
+      error.value = err.message
+      console.error('Erro ao buscar profissionais:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     // Estado
     especialidades,
+    profissionais,
     loading,
     error,
     inserting,
@@ -178,6 +230,7 @@ export const useProfissionais = () => {
     fetchEspecialidadeById,
     insertEspecialidade,
     updateEspecialidade,
-    deleteEspecialidade
+    deleteEspecialidade,
+    fetchProfissionais
   }
 }
