@@ -8,3 +8,8 @@ export interface Especialidade {
   id: number
   especialidade: string
 }
+
+export interface RpcResponse {
+  success: boolean
+  message: string
+}

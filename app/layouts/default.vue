@@ -16,6 +16,9 @@
         <slot />
       </div>
     </main>
+
+    <!-- Teleports Container - Para modais e outros elementos que precisam ser teleportados -->
+    <div id="teleports"></div>
   </div>
 </template>
 

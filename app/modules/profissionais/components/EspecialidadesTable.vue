@@ -74,17 +74,46 @@
         <p class="text-sm text-neutral-500">
           Total: {{ especialidades.length }} especialidade{{ especialidades.length !== 1 ? 's' : '' }}
         </p>
-        <Button @click="addEspecialidade">
+        <Button v-if="profileStore.currentProfile?.role === 'admin'" @click="addEspecialidade">
           Nova Especialidade
         </Button>
       </div>
     </template>
   </Card>
+
+  <!-- Modal para adicionar nova especialidade -->
+  <Modal
+    v-model="showAddModal"
+    title="Nova Especialidade"
+    confirm-text="Salvar"
+    cancel-text="Cancelar"
+    :loading="inserting"
+    @confirm="handleSaveEspecialidade"
+    @cancel="handleCancelEspecialidade"
+  >
+    <div class="space-y-4">
+      <div>
+        <label for="especialidade" class="block text-sm font-medium text-neutral-700 mb-2">
+          Nome da Especialidade
+        </label>
+        <Input
+          id="especialidade"
+          v-model="novaEspecialidade"
+          placeholder="Digite o nome da especialidade"
+          @keyup.enter="handleSaveEspecialidade"
+        />
+        <p v-if="formError" class="mt-1 text-sm text-red-600">
+          {{ formError }}
+        </p>
+      </div>
+    </div>
+  </Modal>
 </template>
 
 <script setup lang="ts">
 import type { Especialidade } from '../types/especialidade.types'
 import { useProfissionais } from '../composables/profissionais'
+import { useProfileStore } from '../../../shared/stores/useProfileStore'
 
 // Imports explícitos dos componentes UI
 import Card from '../../../shared/components/ui/Card.vue'
@@ -94,13 +123,25 @@ import TableHeader from '../../../shared/components/ui/TableHeader.vue'
 import TableBody from '../../../shared/components/ui/TableBody.vue'
 import TableRow from '../../../shared/components/ui/TableRow.vue'
 import TableCell from '../../../shared/components/ui/TableCell.vue'
+import Modal from '../../../shared/components/ui/Modal.vue'
+import Input from '../../../shared/components/ui/Input.vue'
 
 // Composable
-const { especialidades, loading, error, fetchEspecialidades } = useProfissionais()
+const { especialidades, loading, error, fetchEspecialidades, inserting, insertEspecialidade } = useProfissionais()
+
+// Store de perfil
+const profileStore = useProfileStore()
 
 // Estado da tabela
 const sortKey = ref<string>('id')
 const sortDirection = ref<'asc' | 'desc'>('asc')
+
+// Estado do modal
+const showAddModal = ref(false)
+
+// Estado do formulário
+const novaEspecialidade = ref('')
+const formError = ref<string | null>(null)
 
 // Configuração das colunas
 const columns = [
@@ -152,7 +193,32 @@ const deleteEspecialidade = (especialidade: Especialidade) => {
 }
 
 const addEspecialidade = () => {
-  console.log('Adicionar nova especialidade')
+  showAddModal.value = true
+}
+
+// Handlers do formulário
+const handleSaveEspecialidade = async () => {
+  if (!novaEspecialidade.value.trim()) {
+    formError.value = 'O nome da especialidade é obrigatório'
+    return
+  }
+
+  try {
+    formError.value = null
+    await insertEspecialidade(novaEspecialidade.value.trim())
+    
+    // Fechar modal e limpar formulário
+    showAddModal.value = false
+    novaEspecialidade.value = ''
+  } catch (err: any) {
+    formError.value = err.message || 'Erro ao salvar especialidade'
+  }
+}
+
+const handleCancelEspecialidade = () => {
+  showAddModal.value = false
+  novaEspecialidade.value = ''
+  formError.value = null
 }
 
 // Carregar dados ao montar o componente
