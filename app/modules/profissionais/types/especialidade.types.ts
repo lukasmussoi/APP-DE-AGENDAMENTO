@@ -18,6 +18,8 @@ export interface Profissional {
   id: number
   nome: string
   especialidade: string
+  profile_id: string
+  especialidade_id: number
 }
 
 export interface RpcResponseProfissionais {

@@ -47,6 +47,9 @@
             <TableCell class="font-medium text-neutral-900">
               {{ profissional.id }}
             </TableCell>
+            <TableCell class="font-mono text-sm">
+              {{ profissional.profile_id }}
+            </TableCell>
             <TableCell>
               {{ profissional.nome }}
             </TableCell>
@@ -99,6 +102,7 @@ const sortDirection = ref<'asc' | 'desc'>('asc')
 // Configuração das colunas
 const columns = [
   { key: 'id', label: 'ID', sortable: true, class: 'w-20' },
+  { key: 'profile_id', label: 'Prof ID', sortable: true, class: 'w-32' },
   { key: 'nome', label: 'Nome', sortable: true },
   { key: 'especialidade', label: 'Especialidade', sortable: true }
 ]
