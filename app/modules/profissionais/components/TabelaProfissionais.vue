@@ -72,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Profissional } from '../../types/especialidade.types.ts'
+import type { Profissional } from '../types/especialidade.types'
 
 // Imports explícitos dos componentes UI
 import Card from '../../../shared/components/ui/Card.vue'
