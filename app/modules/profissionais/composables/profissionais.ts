@@ -217,6 +217,110 @@ export const useProfissionais = () => {
     }
   }
 
+  // Função para inserir novo profissional
+  const insertProfissional = async (profileId: number, especialidadeId: number): Promise<RpcResponse> => {
+    // Guard: Evitar execuções simultâneas
+    if (inserting.value) return { success: false, message: 'Operação já em andamento' }
+
+    try {
+      inserting.value = true
+      error.value = null
+
+      const { data, error: insertError } = await supabase
+        .rpc('inserir_profissional_admin', {
+          p_profile_id: profileId,
+          p_especialidade_id: especialidadeId
+        })
+
+      if (insertError) throw insertError
+
+      const result = data as RpcResponse
+
+      // Verificar se a operação foi bem-sucedida baseado no retorno JSONB
+      if (!result.success) {
+        throw new Error(result.message || 'Erro ao inserir profissional')
+      }
+
+      // Recarregar profissionais após inserção
+      await fetchProfissionais()
+
+      return result
+    } catch (err: any) {
+      error.value = err.message
+      console.error('Erro ao inserir profissional:', err)
+      throw err
+    } finally {
+      inserting.value = false
+    }
+  }
+
+  // Função para atualizar profissional
+  const updateProfissional = async (id: number, profileId: number, especialidadeId: number): Promise<RpcResponse> => {
+    // Guard: Evitar execuções simultâneas
+    if (inserting.value) return { success: false, message: 'Operação já em andamento' }
+
+    try {
+      inserting.value = true
+      error.value = null
+
+      const { data, error: updateError } = await supabase
+        .rpc('ag_editar_profissional_admin', {
+          p_id: id,
+          p_profile_id: profileId,
+          p_especialidade_id: especialidadeId
+        })
+
+      if (updateError) throw updateError
+
+      const result = data as RpcResponse
+
+      // Verificar se a operação foi bem-sucedida baseado no retorno JSONB
+      if (!result.success) {
+        throw new Error(result.message || 'Erro ao editar profissional')
+      }
+
+      // Recarregar profissionais após atualização
+      await fetchProfissionais()
+
+      return result
+    } catch (err: any) {
+      error.value = err.message
+      console.error('Erro ao editar profissional:', err)
+      throw err
+    } finally {
+      inserting.value = false
+    }
+  }
+
+  // Função para deletar profissional
+  const deleteProfissional = async (id: number): Promise<boolean> => {
+    // Guard: Evitar execuções simultâneas
+    if (inserting.value) return false
+
+    try {
+      inserting.value = true
+      error.value = null
+
+      const { error: deleteError } = await supabase
+        .from('ag_profissionais')
+        .delete()
+        .eq('id', id)
+
+      if (deleteError) throw deleteError
+
+      // Recarregar profissionais após exclusão
+      await fetchProfissionais()
+
+      return true
+    } catch (err: any) {
+      error.value = err.message
+      console.error('Erro ao deletar profissional:', err)
+      throw err
+    } finally {
+      inserting.value = false
+    }
+  }
+
   return {
     // Estado
     especialidades,
@@ -231,6 +335,9 @@ export const useProfissionais = () => {
     insertEspecialidade,
     updateEspecialidade,
     deleteEspecialidade,
-    fetchProfissionais
+    fetchProfissionais,
+    insertProfissional,
+    updateProfissional,
+    deleteProfissional
   }
 }

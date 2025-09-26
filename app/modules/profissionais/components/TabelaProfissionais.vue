@@ -56,6 +56,24 @@
             <TableCell>
               {{ profissional.especialidade }}
             </TableCell>
+            <TableCell class="text-right">
+              <div class="flex gap-2 justify-end">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  @click.stop="$emit('edit', profissional)"
+                >
+                  Editar
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="danger"
+                  @click.stop="$emit('delete', profissional)"
+                >
+                  Excluir
+                </Button>
+              </div>
+            </TableCell>
           </TableRow>
         </TableBody>
       </Table>
@@ -93,6 +111,8 @@ const props = defineProps<{
 // Emits
 defineEmits<{
   retry: []
+  edit: [profissional: Profissional]
+  delete: [profissional: Profissional]
 }>()
 
 // Estado da tabela
@@ -104,7 +124,8 @@ const columns = [
   { key: 'id', label: 'ID', sortable: true, class: 'w-20' },
   { key: 'profile_id', label: 'Prof ID', sortable: true, class: 'w-32' },
   { key: 'nome', label: 'Nome', sortable: true },
-  { key: 'especialidade', label: 'Especialidade', sortable: true }
+  { key: 'especialidade', label: 'Especialidade', sortable: true },
+  { key: 'actions', label: 'Ações', sortable: false, class: 'w-40 text-right' }
 ]
 
 // Computed para profissionais ordenados
