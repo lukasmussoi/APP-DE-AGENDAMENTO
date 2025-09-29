@@ -56,7 +56,7 @@
             <TableCell>
               {{ profissional.especialidade }}
             </TableCell>
-            <TableCell class="text-right">
+            <TableCell class="text-right" v-if="isAdmin">
               <div class="flex gap-2 justify-end">
                 <Button 
                   size="sm" 
@@ -106,6 +106,7 @@ const props = defineProps<{
   profissionais: Profissional[]
   loading: boolean
   error: string | null
+  isAdmin?: boolean
 }>()
 
 // Emits
@@ -120,13 +121,21 @@ const sortKey = ref<string>('id')
 const sortDirection = ref<'asc' | 'desc'>('asc')
 
 // Configuração das colunas
-const columns = [
-  { key: 'id', label: 'ID', sortable: true, class: 'w-20' },
-  { key: 'profile_id', label: 'Prof ID', sortable: true, class: 'w-32' },
-  { key: 'nome', label: 'Nome', sortable: true },
-  { key: 'especialidade', label: 'Especialidade', sortable: true },
-  { key: 'actions', label: 'Ações', sortable: false, class: 'w-40 text-right' }
-]
+const columns = computed(() => {
+  const baseColumns = [
+    { key: 'id', label: 'ID', sortable: true, class: 'w-20' },
+    { key: 'profile_id', label: 'Prof ID', sortable: true, class: 'w-32' },
+    { key: 'nome', label: 'Nome', sortable: true },
+    { key: 'especialidade', label: 'Especialidade', sortable: true }
+  ]
+
+  // Só adiciona coluna de ações se for admin
+  if (props.isAdmin) {
+    baseColumns.push({ key: 'actions', label: 'Ações', sortable: false, class: 'w-40 text-right' })
+  }
+
+  return baseColumns
+})
 
 // Computed para profissionais ordenados
 const sortedProfissionais = computed(() => {

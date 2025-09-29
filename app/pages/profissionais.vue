@@ -27,6 +27,7 @@
       :profissionais="profissionais"
       :loading="loading"
       :error="error"
+      :is-admin="profileStore.currentProfile?.role === 'admin'"
       @retry="fetchProfissionais"
       @edit="handleEditProfissional"
       @delete="handleDeleteProfissional"
