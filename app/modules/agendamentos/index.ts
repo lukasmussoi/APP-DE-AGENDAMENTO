@@ -12,3 +12,4 @@ export { useAgendamentoStore } from './stores/useAgendamentoStore'
 
 // Exportar componentes
 export { default as AgendamentoManager } from './components/AgendamentoManager.vue'
+export { default as SemanaController } from './components/SemanaController.vue'
