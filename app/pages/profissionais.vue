@@ -199,7 +199,7 @@ import Modal from '../shared/components/ui/Modal.vue'
 import Button from '../shared/components/ui/Button.vue'
 
 // Composables
-const { profissionais, loading, error, fetchProfissionais, insertProfissional, updateProfissional, deleteProfissional } = useProfissionais()
+const { profissionais, loading, error, fetchProfissionais, insertProfissional, updateProfissional, deleteProfissional, prepareNewProfissional } = useProfissionais()
 const { perfis, profissionaisCadastrados, especialidadesDisponiveis, fetchDadosAdmin } = useUsuarios()
 
 // Store de perfil
@@ -230,7 +230,11 @@ onMounted(async () => {
 })
 
 // Handlers do modal
-const openNovoProfissionalModal = () => {
+const openNovoProfissionalModal = async () => {
+  // Executar função do composable para preparar novo registro
+  await prepareNewProfissional()
+  
+  // Limpar campos e abrir modal
   selectedPerfilId.value = null
   selectedEspecialidadeId.value = null
   modalError.value = null

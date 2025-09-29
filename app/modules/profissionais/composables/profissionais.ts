@@ -226,25 +226,19 @@ export const useProfissionais = () => {
       inserting.value = true
       error.value = null
 
-      const { data, error: insertError } = await supabase
-        .rpc('inserir_profissional_admin', {
-          p_profile_id: profileId,
-          p_especialidade_id: especialidadeId
+      const { error: insertError } = await (supabase as any)
+        .from('ag_profissionais')
+        .insert({
+          profile_id: profileId,
+          especialidade_id: especialidadeId
         })
 
       if (insertError) throw insertError
 
-      const result = data as RpcResponse
-
-      // Verificar se a operação foi bem-sucedida baseado no retorno JSONB
-      if (!result.success) {
-        throw new Error(result.message || 'Erro ao inserir profissional')
-      }
-
       // Recarregar profissionais após inserção
       await fetchProfissionais()
 
-      return result
+      return { success: true, message: 'Profissional inserido com sucesso' }
     } catch (err: any) {
       error.value = err.message
       console.error('Erro ao inserir profissional:', err)
@@ -263,26 +257,20 @@ export const useProfissionais = () => {
       inserting.value = true
       error.value = null
 
-      const { data, error: updateError } = await supabase
-        .rpc('ag_editar_profissional_admin', {
-          p_id: id,
-          p_profile_id: profileId,
-          p_especialidade_id: especialidadeId
+      const { error: updateError } = await (supabase as any)
+        .from('ag_profissionais')
+        .update({
+          profile_id: profileId,
+          especialidade_id: especialidadeId
         })
+        .eq('id', id)
 
       if (updateError) throw updateError
-
-      const result = data as RpcResponse
-
-      // Verificar se a operação foi bem-sucedida baseado no retorno JSONB
-      if (!result.success) {
-        throw new Error(result.message || 'Erro ao editar profissional')
-      }
 
       // Recarregar profissionais após atualização
       await fetchProfissionais()
 
-      return result
+      return { success: true, message: 'Profissional atualizado com sucesso' }
     } catch (err: any) {
       error.value = err.message
       console.error('Erro ao editar profissional:', err)
@@ -321,6 +309,21 @@ export const useProfissionais = () => {
     }
   }
 
+  // Função para preparar novo profissional (chamada ao abrir modal)
+  const prepareNewProfissional = async () => {
+    try {
+      // Aqui podemos adicionar lógica de preparação se necessário
+      // Por exemplo, verificar permissões, carregar dados adicionais, etc.
+      console.log('Preparando novo profissional...')
+
+      // Por enquanto, apenas log. Pode ser expandido conforme necessidade
+      return { success: true, message: 'Pronto para criar novo profissional' }
+    } catch (err: any) {
+      console.error('Erro ao preparar novo profissional:', err)
+      throw err
+    }
+  }
+
   return {
     // Estado
     especialidades,
@@ -338,6 +341,7 @@ export const useProfissionais = () => {
     fetchProfissionais,
     insertProfissional,
     updateProfissional,
-    deleteProfissional
+    deleteProfissional,
+    prepareNewProfissional
   }
 }
