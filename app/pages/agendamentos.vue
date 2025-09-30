@@ -9,6 +9,11 @@
 </template>
 
 <script setup lang="ts">
+// Usar layout específico para agendamentos
+definePageMeta({
+  layout: 'agendamentos'
+})
+
 // Importar componente do módulo agendamentos
 import { AgendamentoManager } from '../modules/agendamentos'
 

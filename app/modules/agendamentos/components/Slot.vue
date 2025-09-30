@@ -6,7 +6,7 @@
 
 <template>
   <div
-    class="slot bg-blue-100 border border-blue-300 rounded overflow-hidden absolute left-0 right-0"
+    class="slot bg-blue-100 border border-blue-300 rounded overflow-hidden absolute left-0 right-0 transition-all duration-300 hover:scale-105 hover:z-10 hover:shadow-lg"
     :style="{ top: topPosition + 'px', height: slotHeight + 'px' }"
   >
     <div

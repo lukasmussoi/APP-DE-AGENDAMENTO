@@ -1,3 +1,92 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Variáveis de cores modernas */
+:root {
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-success: #10b981;
+  --color-success-hover: #059669;
+  --color-warning: #f59e0b;
+  --color-warning-hover: #d97706;
+  --color-error: #ef4444;
+  --color-error-hover: #dc2626;
+  --color-info: #06b6d4;
+  --color-info-hover: #0891b2;
+  
+  /* Cores de fundo gradiente */
+  --bg-gradient-start: #f8fafc;
+  --bg-gradient-end: #e2e8f0;
+  
+  /* Sombras modernas */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-button: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-button-hover: 0 2px 4px 0 rgb(0 0 0 / 0.1);
+}
+
+/* Transições suaves globais */
+.transition-all-smooth {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Efeitos de hover para cards */
+.card-hover-effect {
+  @apply transition-all-smooth hover:shadow-lg hover:-translate-y-1;
+}
+
+/* Estados de agendamento com cores */
+.status-disponivel {
+  @apply bg-green-50 border-green-200 text-green-800 hover:bg-green-100;
+}
+
+.status-ocupado {
+  @apply bg-red-50 border-red-200 text-red-800 hover:bg-red-100;
+}
+
+.status-pendente {
+  @apply bg-yellow-50 border-yellow-200 text-yellow-800 hover:bg-yellow-100;
+}
+
+.status-confirmado {
+  @apply bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100;
+}
+
+/* Animações sutis */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Estilo para botões modernos */
+.btn-modern {
+  @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg;
+  @apply transition-all-smooth focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-primary {
+  @apply btn-modern bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+}
+
+.btn-success {
+  @apply btn-modern bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+}
+
+.btn-warning {
+  @apply btn-modern bg-yellow-600 text-white hover:bg-yellow-700 focus:ring-yellow-500;
+}
+
+.btn-danger {
+  @apply btn-modern bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+}
