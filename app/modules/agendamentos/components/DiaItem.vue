@@ -5,9 +5,9 @@
  */
 
 <template>
-  <div class="dia-item text-center p-1 text-sm">
-    <p class="font-medium">{{ diaAbreviado }}</p>
-    <p>{{ numeroDia }}</p>
+  <div class="dia-item text-center py-2 px-1 text-sm border-r border-gray-200 last:border-r-0">
+    <p class="font-medium text-gray-700">{{ diaAbreviado }}</p>
+    <p class="text-lg font-semibold text-gray-900">{{ numeroDia }}</p>
   </div>
 </template>
 

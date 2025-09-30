@@ -6,7 +6,7 @@
 
 <template>
   <div class="semana-dias border border-gray-300 rounded p-2 bg-white">
-    <div class="flex space-x-2">
+    <div class="grid grid-cols-7">
       <DiaItem
         v-for="(dia, index) in dias"
         :key="index"
