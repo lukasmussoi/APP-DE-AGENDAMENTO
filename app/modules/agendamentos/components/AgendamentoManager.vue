@@ -1,6 +1,6 @@
 /**
  * PROPÓSITO: Componente principal para gerenciamento de agendamentos
- * IMPORTA: SemanaController
+ * IMPORTA: SemanaController, Button
  * USADO_POR: Página de agendamentos
  */
 
@@ -15,7 +15,10 @@
 
       <!-- Espaço para outros controles no lado direito -->
       <div class="flex-1 flex justify-end">
-        <!-- Outros controles podem ser adicionados aqui -->
+        <!-- Botão para incluir novos agendamentos -->
+        <Button @click="incluirNovoAgendamento">
+          Novo Agendamento
+        </Button>
       </div>
     </div>
 
@@ -29,4 +32,13 @@
 <script setup lang="ts">
 // Importar componente controlador de semana
 import SemanaController from './SemanaController.vue'
+
+// Importar componente Button
+import Button from '../../../shared/components/ui/Button.vue'
+
+// Função para incluir novo agendamento (implementação futura)
+const incluirNovoAgendamento = () => {
+  // TODO: Implementar modal ou navegação para criação de agendamento
+  console.log('Incluir novo agendamento')
+}
 </script>
