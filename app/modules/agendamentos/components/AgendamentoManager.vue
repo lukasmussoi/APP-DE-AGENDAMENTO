@@ -9,12 +9,26 @@
     <!-- Header - parte superior -->
     <div class="topo h-24 bg-gray-50 border-b border-gray-200 flex items-center px-6">
       <!-- Controlador de semana no lado esquerdo -->
-      <div class="flex-1">
+      <div class="w-1/3">
         <SemanaController />
       </div>
 
+      <!-- Centro: Nome e especialidade do usuário -->
+      <div class="w-1/3 flex justify-center">
+        <div v-if="userEspecialidade" class="text-center">
+          <p class="font-semibold">{{ userEspecialidade.nome }}</p>
+          <p class="text-sm text-gray-600">{{ userEspecialidade.especialidade }}</p>
+        </div>
+        <div v-else-if="loadingUserEspecialidade" class="text-center">
+          <p class="text-sm text-gray-500">Carregando...</p>
+        </div>
+        <div v-else class="text-center">
+          <p class="text-sm text-gray-500">Dados não disponíveis</p>
+        </div>
+      </div>
+
       <!-- Espaço para outros controles no lado direito -->
-      <div class="flex-1 flex justify-end">
+      <div class="w-1/3 flex justify-end">
         <!-- Botão para incluir novos agendamentos -->
         <Button @click="incluirNovoAgendamento">
           Novo Agendamento
@@ -35,6 +49,17 @@ import SemanaController from './SemanaController.vue'
 
 // Importar componente Button
 import Button from '../../../shared/components/ui/Button.vue'
+
+// Importar composable para dados do usuário
+import { useUserEspecialidade } from '../composables/useUserEspecialidade'
+
+// Usar o composable
+const { userEspecialidade, loading: loadingUserEspecialidade, fetchUserEspecialidade } = useUserEspecialidade()
+
+// Buscar dados do usuário ao montar o componente
+onMounted(async () => {
+  await fetchUserEspecialidade()
+})
 
 // Função para incluir novo agendamento (implementação futura)
 const incluirNovoAgendamento = () => {
