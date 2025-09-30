@@ -49,8 +49,15 @@
       <ReguaHorarios />
 
       <!-- Área principal de agendamentos -->
-      <div class="flex-1 relative">
-        <!-- Grade de agendamentos aqui -->
+      <div class="flex-1 relative pr-6">
+        <!-- Grade de dias da semana -->
+        <div class="grid grid-cols-7 h-full">
+          <ItemAgendamento
+            v-for="(dia, index) in agendamentoStore.diasSemana"
+            :key="index"
+            :data="dia"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -68,6 +75,9 @@ import SemanaDias from './SemanaDias.vue'
 
 // Importar componente ReguaHorarios
 import ReguaHorarios from './ReguaHorarios.vue'
+
+// Importar componente ItemAgendamento
+import ItemAgendamento from './ItemAgendamento.vue'
 
 // Importar store de agendamentos
 import { useAgendamentoStore } from '../stores/useAgendamentoStore'
