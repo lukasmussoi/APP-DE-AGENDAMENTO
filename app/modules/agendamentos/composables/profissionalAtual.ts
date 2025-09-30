@@ -10,7 +10,7 @@ import { useAuth } from '../../../shared/composables/useAuth'
 import { useProfileStore } from '../../../shared/stores/useProfileStore'
 import type { Especialidade, Profissional, RpcResponseProfissionais } from '../../profissionais/types/especialidade.types'
 
-export const useUserEspecialidade = () => {
+export const profissionalAtual = () => {
   const supabase = useSupabaseClient()
   const { user } = useAuth()
   const profileStore = useProfileStore()

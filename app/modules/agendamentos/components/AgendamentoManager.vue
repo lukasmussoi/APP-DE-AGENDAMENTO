@@ -51,10 +51,10 @@ import SemanaController from './SemanaController.vue'
 import Button from '../../../shared/components/ui/Button.vue'
 
 // Importar composable para dados do usuário
-import { useUserEspecialidade } from '../composables/useUserEspecialidade'
+import { profissionalAtual } from '../composables/profissionalAtual'
 
 // Usar o composable
-const { userEspecialidade, loading: loadingUserEspecialidade, fetchUserEspecialidade } = useUserEspecialidade()
+const { userEspecialidade, loading: loadingUserEspecialidade, fetchUserEspecialidade } = profissionalAtual()
 
 // Buscar dados do usuário ao montar o componente
 onMounted(async () => {
