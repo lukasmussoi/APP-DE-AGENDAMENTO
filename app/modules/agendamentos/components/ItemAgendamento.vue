@@ -50,32 +50,45 @@ const slotsComStatus = computed(() => {
       // Filtrar apenas agendamentos da data específica
       if (!agendamento.data) return false
       
-      const agendamentoDate = new Date(agendamento.data)
-      return agendamentoDate.toDateString() === props.data.toDateString()
+      // Função auxiliar para comparar datas ignorando timezone
+      const compararDatas = (dataString: string, dataObj: Date): boolean => {
+        const [ano, mes, dia] = dataString.split('-').map(Number)
+        return ano === dataObj.getFullYear() && 
+               mes === (dataObj.getMonth() + 1) && 
+               dia === dataObj.getDate()
+      }
+      
+      return compararDatas(agendamento.data, props.data)
     })
     .map(agendamento => {
-      // Converter strings de data/hora para objetos Date
-      const dataBase = new Date(agendamento.data!)
+      // Criar data base local (evitando problemas de timezone)
+      const partesData = agendamento.data!.split('-')
+      const ano = parseInt(partesData[0] || '2025')
+      const mes = parseInt(partesData[1] || '1') - 1 // mes - 1 porque Date usa 0-based
+      const dia = parseInt(partesData[2] || '1')
+      const dataBase = new Date(ano, mes, dia)
       
       // Valores padrão para horas
       let horaInicio = '00', minutoInicio = '00'
       let horaFim = '00', minutoFim = '00'
       
       if (agendamento.hora_inicio) {
-        [horaInicio, minutoInicio] = agendamento.hora_inicio!.split(':')
+        const partes = agendamento.hora_inicio.split(':')
+        horaInicio = partes[0] || '00'
+        minutoInicio = partes[1] || '00'
       }
       
       if (agendamento.hora_fim) {
-        [horaFim, minutoFim] = agendamento.hora_fim!.split(':')
+        const partes = agendamento.hora_fim.split(':')
+        horaFim = partes[0] || '00'
+        minutoFim = partes[1] || '00'
       }
       
       // Combinar data com hora_inicio
-      const start = new Date(dataBase)
-      start.setHours(parseInt(horaInicio), parseInt(minutoInicio), 0, 0)
+      const start = new Date(ano, mes, dia, parseInt(horaInicio), parseInt(minutoInicio), 0, 0)
       
       // Combinar data com hora_fim
-      const end = new Date(dataBase)
-      end.setHours(parseInt(horaFim), parseInt(minutoFim), 0, 0)
+      const end = new Date(ano, mes, dia, parseInt(horaFim), parseInt(minutoFim), 0, 0)
       
       return {
         start,
