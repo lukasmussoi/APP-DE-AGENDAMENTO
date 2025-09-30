@@ -5,7 +5,7 @@
  */
 
 // Exportar composable
-export { useAgendamentos } from './composables/agendamentos'
+export { useAgendamentos } from './composables/useAgendamentos'
 
 // Exportar store
 export { useAgendamentoStore } from './stores/useAgendamentoStore'

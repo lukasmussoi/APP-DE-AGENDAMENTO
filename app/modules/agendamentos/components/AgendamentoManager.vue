@@ -62,6 +62,7 @@
             v-for="(dia, index) in agendamentoStore.diasSemana"
             :key="index"
             :data="dia"
+            :agendamentos="agendamentos"
             class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-visible"
           />
         </div>
@@ -92,15 +93,22 @@ import { useAgendamentoStore } from '../stores/useAgendamentoStore'
 // Importar composable para dados do usuário
 import { profissionalAtual } from '../composables/profissionalAtual'
 
+// Importar composable para agendamentos
+import { useAgendamentos } from '../composables/useAgendamentos'
+
 // Usar o composable
 const { userEspecialidade, loading: loadingUserEspecialidade, fetchUserEspecialidade } = profissionalAtual()
+
+// Usar o composable de agendamentos
+const { agendamentos, loading: loadingAgendamentos, error: errorAgendamentos, fetchAgendamentos } = useAgendamentos()
 
 // Usar o store de agendamentos
 const agendamentoStore = useAgendamentoStore()
 
-// Buscar dados do usuário ao montar o componente
+// Buscar dados do usuário e agendamentos ao montar o componente
 onMounted(async () => {
   await fetchUserEspecialidade()
+  await fetchAgendamentos()
 })
 
 // Função para incluir novo agendamento (implementação futura)

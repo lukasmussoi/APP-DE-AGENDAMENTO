@@ -1,6 +1,6 @@
 /**
  * PROPÓSITO: Componente para exibir item de agendamento para um dia específico
- * IMPORTA: Slot
+ * IMPORTA: Slot, tipos de Agendamento
  * USADO_POR: AgendamentoManager
  */
 
@@ -35,69 +35,56 @@
 // Importar componente Slot
 import Slot from './Slot.vue'
 
+// Importar tipos
+import type { Agendamento } from '../types/agendamentos.types'
+
 const props = defineProps<{
   data: Date
+  agendamentos: Agendamento[]
 }>()
 
-// Dados mocados de agendamentos com status
-// TODO: Substituir por dados do banco de dados quando implementar a API de agendamentos
-const slotsMocados = [
-  {
-    start: new Date(2025, 8, 28, 11, 0), // 28/09 11:00
-    end: new Date(2025, 8, 28, 12, 0),
-    title: 'Consulta Médica',
-    description: 'Consulta de rotina com Dr. Silva',
-    status: 'confirmado' as const
-  },
-  {
-    start: new Date(2025, 8, 29, 13, 30), // 29/09 13:30
-    end: new Date(2025, 8, 29, 14, 0),
-    title: 'Reunião de Projeto',
-    description: 'Discussão sobre novos recursos',
-    status: 'pendente' as const
-  },
-  {
-    start: new Date(2025, 8, 30, 11, 15), // 30/09 11:15
-    end: new Date(2025, 8, 30, 12, 15),
-    title: 'Treinamento',
-    description: 'Sessão de treinamento em equipe',
-    status: 'confirmado' as const
-  },
-  {
-    start: new Date(2025, 9, 1, 14, 0), // 01/10 14:00
-    end: new Date(2025, 9, 1, 14, 30),
-    title: 'Ligação Importante',
-    description: 'Chamada com cliente potencial',
-    status: 'ocupado' as const
-  },
-  {
-    start: new Date(2025, 9, 2, 12, 0), // 02/10 12:00
-    end: new Date(2025, 9, 2, 13, 0),
-    title: 'Almoço de Negócios',
-    description: 'Encontro com parceiro comercial',
-    status: 'confirmado' as const
-  },
-  {
-    start: new Date(2025, 9, 3, 11, 30), // 03/10 11:30
-    end: new Date(2025, 9, 3, 12, 30),
-    title: 'Apresentação',
-    description: 'Demonstração do produto',
-    status: 'pendente' as const
-  },
-  {
-    start: new Date(2025, 9, 4, 13, 0), // 04/10 13:00
-    end: new Date(2025, 9, 4, 14, 0),
-    title: 'Revisão de Código',
-    description: 'Análise de pull requests',
-    status: 'disponivel' as const
-  }
-]
-
-// Computed para filtrar slots do dia com status
+// Computed para converter agendamentos do banco para formato do Slot
 const slotsComStatus = computed(() => {
-  return slotsMocados.filter(slot => {
-    return slot.start.toDateString() === props.data.toDateString()
-  })
+  return props.agendamentos
+    .filter(agendamento => {
+      // Filtrar apenas agendamentos da data específica
+      if (!agendamento.data) return false
+      
+      const agendamentoDate = new Date(agendamento.data)
+      return agendamentoDate.toDateString() === props.data.toDateString()
+    })
+    .map(agendamento => {
+      // Converter strings de data/hora para objetos Date
+      const dataBase = new Date(agendamento.data!)
+      
+      // Valores padrão para horas
+      let horaInicio = '00', minutoInicio = '00'
+      let horaFim = '00', minutoFim = '00'
+      
+      if (agendamento.hora_inicio) {
+        [horaInicio, minutoInicio] = agendamento.hora_inicio!.split(':')
+      }
+      
+      if (agendamento.hora_fim) {
+        [horaFim, minutoFim] = agendamento.hora_fim!.split(':')
+      }
+      
+      // Combinar data com hora_inicio
+      const start = new Date(dataBase)
+      start.setHours(parseInt(horaInicio), parseInt(minutoInicio), 0, 0)
+      
+      // Combinar data com hora_fim
+      const end = new Date(dataBase)
+      end.setHours(parseInt(horaFim), parseInt(minutoFim), 0, 0)
+      
+      return {
+        start,
+        end,
+        title: agendamento.titulo || 'Sem título',
+        description: agendamento.descricao || '',
+        status: 'confirmado' as const // Por enquanto, todos confirmados
+      }
+    })
 })
 
 // Função para aplicar classes baseadas no status

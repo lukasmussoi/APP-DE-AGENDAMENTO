@@ -16,7 +16,7 @@ export const profissionalAtual = () => {
   const profileStore = useProfileStore()
 
   // Estado reativo
-  const userEspecialidade = ref<{ nome: string; especialidade: string } | null>(null)
+  const userEspecialidade = ref<{ id: number | null; nome: string; especialidade: string } | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -129,6 +129,7 @@ export const profissionalAtual = () => {
 
         // Usar dados do primeiro profissional disponível
         userEspecialidade.value = {
+          id: primeiroProfissional.id,
           nome: primeiroProfissional.nome,
           especialidade: especialidade.especialidade
         }
@@ -147,6 +148,7 @@ export const profissionalAtual = () => {
 
       // Definir resultado
       userEspecialidade.value = {
+        id: profissional.id,
         nome: profile.nome,
         especialidade: especialidade.especialidade
       }
