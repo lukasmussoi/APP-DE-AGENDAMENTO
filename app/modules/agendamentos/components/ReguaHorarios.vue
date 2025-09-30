@@ -9,7 +9,7 @@
     <div
       v-for="hora in horarios"
       :key="hora"
-      class="text-center py-4 text-sm font-medium text-gray-700 border-b border-gray-200"
+      class="text-center h-16 text-sm font-medium text-gray-700 border-b border-gray-200 flex items-center justify-center"
     >
       {{ hora }}:00
     </div>
