@@ -37,13 +37,21 @@
     </div>
 
     <!-- Componente para exibir dias da semana -->
-    <div class="px-6 py-2">
-      <SemanaDias :dias="agendamentoStore.diasSemana" />
+    <div class="py-2">
+      <div class="pl-20 pr-6">
+        <SemanaDias :dias="agendamentoStore.diasSemana" />
+      </div>
     </div>
 
     <!-- Corpo - parte inferior que ocupa o restante -->
-    <div class="corpo flex-1">
-      <!-- Corpo do gerenciador de agendamentos -->
+    <div class="corpo flex-1 flex">
+      <!-- Régua de horários à esquerda -->
+      <ReguaHorarios />
+
+      <!-- Área principal de agendamentos -->
+      <div class="flex-1 relative">
+        <!-- Grade de agendamentos aqui -->
+      </div>
     </div>
   </div>
 </template>
@@ -57,6 +65,9 @@ import Button from '../../../shared/components/ui/Button.vue'
 
 // Importar componente SemanaDias
 import SemanaDias from './SemanaDias.vue'
+
+// Importar componente ReguaHorarios
+import ReguaHorarios from './ReguaHorarios.vue'
 
 // Importar store de agendamentos
 import { useAgendamentoStore } from '../stores/useAgendamentoStore'
