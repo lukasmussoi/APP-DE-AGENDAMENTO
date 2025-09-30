@@ -7,7 +7,7 @@
 <template>
   <div class="w-full min-h-screen flex flex-col">
     <!-- Header - parte superior -->
-    <div class="topo h-24 bg-gray-50 border-b border-gray-200 flex items-center px-6">
+    <div class="topo bg-gray-50 border-b border-gray-200 flex items-center px-6">
       <!-- Controlador de semana no lado esquerdo -->
       <div class="w-1/3">
         <SemanaController />
@@ -36,6 +36,11 @@
       </div>
     </div>
 
+    <!-- Componente para exibir dias da semana -->
+    <div class="px-6 py-2">
+      <SemanaDias :dias="agendamentoStore.diasSemana" />
+    </div>
+
     <!-- Corpo - parte inferior que ocupa o restante -->
     <div class="corpo flex-1">
       <!-- Corpo do gerenciador de agendamentos -->
@@ -50,11 +55,20 @@ import SemanaController from './SemanaController.vue'
 // Importar componente Button
 import Button from '../../../shared/components/ui/Button.vue'
 
+// Importar componente SemanaDias
+import SemanaDias from './SemanaDias.vue'
+
+// Importar store de agendamentos
+import { useAgendamentoStore } from '../stores/useAgendamentoStore'
+
 // Importar composable para dados do usuário
 import { profissionalAtual } from '../composables/profissionalAtual'
 
 // Usar o composable
 const { userEspecialidade, loading: loadingUserEspecialidade, fetchUserEspecialidade } = profissionalAtual()
+
+// Usar o store de agendamentos
+const agendamentoStore = useAgendamentoStore()
 
 // Buscar dados do usuário ao montar o componente
 onMounted(async () => {
