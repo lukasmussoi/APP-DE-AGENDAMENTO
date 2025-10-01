@@ -37,11 +37,11 @@
     </div>
 
     <!-- Item selecionado -->
-    <div v-if="selectedItem" class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+    <div v-if="modelValue" class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
       <div class="flex items-center justify-between">
         <div>
-          <div class="font-medium text-blue-900">{{ getDisplayValue(selectedItem) }}</div>
-          <div v-if="subtitleKey" class="text-sm text-blue-700">{{ getSubtitleValue(selectedItem) }}</div>
+          <div class="font-medium text-blue-900">{{ getDisplayValue(modelValue) }}</div>
+          <div v-if="subtitleKey" class="text-sm text-blue-700">{{ getSubtitleValue(modelValue) }}</div>
         </div>
         <button
           @click="clearSelection"
@@ -149,8 +149,8 @@ const clearSelection = () => {
   showDropdown.value = false
 }
 
-// Atualizar searchTerm quando selectedItem muda
-watch(() => props.selectedItem, (newItem) => {
+// Atualizar searchTerm quando modelValue muda
+watch(() => props.modelValue, (newItem) => {
   if (!newItem) {
     searchTerm.value = ''
   }
