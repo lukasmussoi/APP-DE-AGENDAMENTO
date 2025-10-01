@@ -9,17 +9,39 @@ import type { Cliente } from '../types/clientes.types'
 export const useClientes = () => {
   // Lógica básica de clientes será adicionada aqui
   const clientes = ref<Cliente[]>([])
+  const loading = ref(false)
+  const carregado = ref(false)
 
   /**
    * Lista todos os clientes da tabela ag_clientes
    * @returns Promise<Cliente[]> - Lista de clientes
    */
   const listarClientes = async (): Promise<Cliente[]> => {
-    const supabase = useSupabaseClient()
-    const { data, error } = await supabase.from('ag_clientes').select('*')
-    if (error) throw error
-    clientes.value = data || []
-    return data || []
+    // Se já carregou uma vez, retornar do cache
+    if (carregado.value && clientes.value.length > 0) {
+      return clientes.value
+    }
+
+    // Evitar múltiplas chamadas simultâneas
+    if (loading.value) {
+      // Aguardar a chamada atual terminar
+      while (loading.value) {
+        await new Promise(resolve => setTimeout(resolve, 50))
+      }
+      return clientes.value
+    }
+
+    try {
+      loading.value = true
+      const supabase = useSupabaseClient()
+      const { data, error } = await supabase.from('ag_clientes').select('*')
+      if (error) throw error
+      clientes.value = data || []
+      carregado.value = true
+      return data || []
+    } finally {
+      loading.value = false
+    }
   }
 
   /**
@@ -36,6 +58,7 @@ export const useClientes = () => {
     
     // Adicionar na lista local
     clientes.value.push(clienteInserido)
+    carregado.value = true
     
     return clienteInserido
   }
@@ -173,6 +196,8 @@ export const useClientes = () => {
 
   return {
     clientes,
+    loading,
+    carregado,
     listarClientes,
     insertCliente,
     updateCliente,

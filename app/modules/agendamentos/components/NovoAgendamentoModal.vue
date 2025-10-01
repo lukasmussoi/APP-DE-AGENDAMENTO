@@ -197,6 +197,7 @@ interface Props {
   clientes: Cliente[]
   diasSemana: Date[]
   agendamentos: Agendamento[]
+  loading?: boolean
 }
 
 const props = defineProps<Props>()
@@ -220,8 +221,10 @@ const emit = defineEmits<{
 const { getHorariosDisponiveis, horarioValido, horarioConflitaComAgendamentos } = useValidacaoHorarios()
 
 // Estado do modal
-const saving = ref(false)
 const modalError = ref<string | null>(null)
+
+// Usar loading prop ou fallback para saving interno
+const saving = computed(() => props.loading || false)
 
 // Campos do formulário
 const selectedClienteId = ref<number | null>(null)
@@ -371,7 +374,6 @@ const handleSave = async () => {
   }
 
   try {
-    saving.value = true
     modalError.value = null
 
     emit('save', {
@@ -387,8 +389,6 @@ const handleSave = async () => {
 
   } catch (err: any) {
     modalError.value = err.message || 'Erro ao salvar agendamento'
-  } finally {
-    saving.value = false
   }
 }
 

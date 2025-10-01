@@ -8,16 +8,19 @@ import { ref, watch } from 'vue'
 import { useSupabaseClient } from '#imports'
 import { profissionalAtual } from './profissionalAtual'
 import { useAgendamentoStore } from '../stores/useAgendamentoStore'
+import { useAuth } from '../../../shared/composables/useAuth'
 import type { Agendamento } from '../types/agendamentos.types'
 
 export const useAgendamentos = () => {
   const supabase = useSupabaseClient()
   const { userEspecialidade, fetchUserEspecialidade } = profissionalAtual()
   const agendamentoStore = useAgendamentoStore()
+  const { user } = useAuth()
 
   // Estado reativo
   const agendamentos = ref<Agendamento[]>([])
   const loading = ref(false)
+  const inserting = ref(false)
   const error = ref<string | null>(null)
 
   // Cache para armazenar agendamentos por semana (chave = timestamp do domingo da semana)
@@ -113,6 +116,111 @@ export const useAgendamentos = () => {
     agendamentos.value = agendamentosSemana
   }
 
+  // Função para inserir novo agendamento
+  const inserirAgendamento = async (dadosFormulario: {
+    clienteId: number
+    profissionalId: number
+    data: string
+    horaInicio: string
+    horaFim: string
+    titulo: string
+    descricao: string | null
+    cor: string
+  }): Promise<Agendamento> => {
+    // Guard para evitar chamadas duplas
+    if (inserting.value) {
+      throw new Error('Inserção já em andamento')
+    }
+
+    try {
+      inserting.value = true
+      loading.value = true
+      error.value = null
+
+      // Garantir que temos o user_id disponível
+      if (!user.value) {
+        throw new Error('Usuário não autenticado')
+      }
+
+      // Converter horários para o fuso horário de Brasília (-03:00)
+      const horaInicioComTZ = `${dadosFormulario.horaInicio}:00-03:00`
+      const horaFimComTZ = `${dadosFormulario.horaFim}:00-03:00`
+
+      // Preparar dados para inserção no banco
+      const dadosParaInsercao = {
+        user_id: user.value.id,
+        profissional_id: dadosFormulario.profissionalId,
+        cliente_id: dadosFormulario.clienteId,
+        data: dadosFormulario.data,
+        hora_inicio: horaInicioComTZ,
+        hora_fim: horaFimComTZ,
+        titulo: dadosFormulario.titulo,
+        descricao: dadosFormulario.descricao,
+        cor: dadosFormulario.cor,
+        cancelado: false
+      }
+
+      // Inserir no banco de dados
+      const { data: novosAgendamentos, error: insertError } = await (supabase
+        .from('ag_agendamento') as any)
+        .insert(dadosParaInsercao)
+        .select()
+
+      if (insertError) throw insertError
+
+      if (!novosAgendamentos || novosAgendamentos.length === 0) {
+        throw new Error('Falha ao criar agendamento')
+      }
+
+      const novoAgendamento = novosAgendamentos[0]
+
+      // Atualizar cache local imediatamente para renderização
+      const dataAgendamento = new Date(dadosFormulario.data + 'T00:00:00')
+      const chaveSemana = getChaveSemana(dataAgendamento)
+      const chaveSemanaAtual = getChaveSemana(agendamentoStore.dataReferencia)
+      
+      // Se a semana já está em cache, adicionar o novo agendamento
+      if (cacheSemanas.value.has(chaveSemana)) {
+        const agendamentosDaSemana = [...(cacheSemanas.value.get(chaveSemana) || [])]
+        agendamentosDaSemana.push(novoAgendamento)
+        
+        // Reordenar por data e hora
+        agendamentosDaSemana.sort((a, b) => {
+          const dataA = a.data || ''
+          const dataB = b.data || ''
+          if (dataA !== dataB) return dataA.localeCompare(dataB)
+          
+          const horaA = a.hora_inicio || ''
+          const horaB = b.hora_inicio || ''
+          return horaA.localeCompare(horaB)
+        })
+        
+        cacheSemanas.value.set(chaveSemana, agendamentosDaSemana)
+        
+        // Se é a semana atual exibida, atualizar agendamentos também
+        if (chaveSemana === chaveSemanaAtual) {
+          agendamentos.value = agendamentosDaSemana
+        }
+      } else {
+        // Se não está em cache e é a semana atual, fazer fetch para garantir consistência
+        if (chaveSemana === chaveSemanaAtual) {
+          // Invalidar cache da semana atual e recarregar
+          cacheSemanas.value.delete(chaveSemanaAtual)
+          await fetchAgendamentos()
+        }
+      }
+
+      return novoAgendamento
+    } catch (err: any) {
+      error.value = err.message
+      console.error('Erro ao inserir agendamento:', err)
+      throw err
+    } finally {
+      inserting.value = false
+      loading.value = false
+    }
+  }
+
   // Watcher para reagir às mudanças de semana
   watch(
     () => agendamentoStore.dataReferencia,
@@ -126,11 +234,13 @@ export const useAgendamentos = () => {
     // Estado
     agendamentos,
     loading,
+    inserting,
     error,
     cacheSemanas,
 
     // Actions
     fetchAgendamentos,
-    fetchAgendamentosSemana
+    fetchAgendamentosSemana,
+    inserirAgendamento
   }
 }

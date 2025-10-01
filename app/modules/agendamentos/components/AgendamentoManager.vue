@@ -32,7 +32,8 @@
         <!-- Botão para incluir novos agendamentos modernizado -->
         <button 
           @click="incluirNovoAgendamento"
-          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 inline-flex items-center"
+          :disabled="inserting"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 inline-flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -77,6 +78,7 @@
     :clientes="clientes"
     :diasSemana="agendamentoStore.diasSemana"
     :agendamentos="agendamentos"
+    :loading="inserting"
     @save="handleSaveAgendamento"
     @cancel="handleCancelAgendamento"
   />
@@ -120,7 +122,7 @@ import type { Cliente } from '../../clientes/types/clientes.types'
 const { userEspecialidade, loading: loadingUserEspecialidade, fetchUserEspecialidade } = profissionalAtual()
 
 // Usar o composable de agendamentos
-const { agendamentos, loading: loadingAgendamentos, error: errorAgendamentos, fetchAgendamentos } = useAgendamentos()
+const { agendamentos, loading: loadingAgendamentos, inserting, error: errorAgendamentos, fetchAgendamentos, inserirAgendamento } = useAgendamentos()
 
 // Usar o composable de clientes
 const { clientes, listarClientes } = useClientes()
@@ -137,11 +139,19 @@ onMounted(async () => {
   await fetchAgendamentos()
 })
 
-// Função para incluir novo agendamento (implementação futura)
+// Função para incluir novo agendamento
 const incluirNovoAgendamento = async () => {
+  // Evitar ação se já está inserindo
+  if (inserting.value) return
+
   // Buscar lista de clientes se não estiver carregada
   if (clientes.value.length === 0) {
-    await listarClientes()
+    try {
+      await listarClientes()
+    } catch (err) {
+      console.error('Erro ao carregar clientes:', err)
+      // Ainda assim abrir o modal, pois talvez o usuário não precise selecionar cliente
+    }
   }
 
   // Abrir modal
@@ -159,38 +169,21 @@ const handleSaveAgendamento = async (data: {
   descricao: string | null
   cor: string
 }) => {
+  // Guard para evitar chamadas duplas
+  if (inserting.value) {
+    console.warn('Inserção já em andamento, ignorando chamada duplicada')
+    return
+  }
+
   try {
-    const supabase = useSupabaseClient()
-
-    // Inserir agendamento
-    const { error } = await (supabase.from('ag_agendamento') as any)
-      .insert({
-        cliente_id: data.clienteId,
-        profissional_id: data.profissionalId,
-        data: data.data,
-        hora_inicio: data.horaInicio + ':00+00', // Adicionar segundos e timezone
-        hora_fim: data.horaFim + ':00+00',
-        titulo: data.titulo,
-        descricao: data.descricao,
-        cor: data.cor,
-        cancelado: false
-      })
-      .select()
-
-    if (error) throw error
+    // Usar a função do composable para inserir o agendamento
+    await inserirAgendamento(data)
 
     // Fechar modal após salvar
     showNovoAgendamentoModal.value = false
 
-    // Recarregar agendamentos
-    await fetchAgendamentos()
-
-    // Exibir toast de sucesso
-    const { $toast } = useNuxtApp()
-    $toast.success('Agendamento criado com sucesso!')
-
   } catch (err: any) {
-    // O erro será tratado no modal
+    // O erro será tratado no modal ou composable
     console.error('Erro ao salvar agendamento:', err)
   }
 }
