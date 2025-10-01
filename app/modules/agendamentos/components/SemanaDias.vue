@@ -5,7 +5,7 @@
  */
 
 <template>
-  <div class="semana-dias border border-gray-300 rounded bg-white">
+  <div class="semana-dias border border-gray-300 rounded p-2 bg-white">
     <div class="grid grid-cols-7">
       <DiaItem
         v-for="(dia, index) in dias"

@@ -7,7 +7,7 @@
 <template>
   <div class="item-agendamento bg-white min-h-[400px] flex flex-col transition-all duration-300 relative overflow-hidden">
     <!-- Lista de slots de agendamento com design moderno -->
-    <div class="flex-1 overflow-y-auto overflow-x-visible relative" style="min-height: 896px; padding: 0; border: 1px solid #e2e8f0; border-radius: 8px; background: white;">
+    <div class="flex-1 overflow-y-auto overflow-x-visible relative" style="min-height: 896px; padding: 0; border: 1px solid #e2e8f0; border-radius: 8px; background: white; overflow: visible;">
       <Slot
         v-for="(slot, index) in slotsComStatus"
         :key="index"

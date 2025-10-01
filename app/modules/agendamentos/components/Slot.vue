@@ -6,7 +6,7 @@
 
 <template>
   <div
-    class="slot rounded overflow-hidden absolute left-0 right-0 transition-all duration-300 hover:scale-105 hover:z-10 hover:shadow-lg cursor-pointer"
+    class="slot rounded overflow-hidden absolute left-0 right-0 transition-all duration-300 hover:scale-105 hover:z-50 hover:shadow-lg cursor-pointer"
     :style="{ top: topPosition + 'px', height: slotHeight + 'px', backgroundColor: cor }"
     @click="emit('edit', agendamentoId)"
   >
