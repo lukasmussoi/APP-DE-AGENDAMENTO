@@ -94,7 +94,7 @@
                     v-if="showDefaultFooter"
                     :variant="variant === 'danger' ? 'danger' : 'solid'"
                     @click="handleConfirm"
-                    :disabled="loading"
+                    :disabled="loading || confirmDisabled"
                   >
                     {{ confirmText }}
                   </Button>
@@ -126,6 +126,7 @@ interface ModalProps {
   contentClass?: string
   isEdicao?: boolean
   variant?: 'danger' | 'default'
+  confirmDisabled?: boolean
 }
 
 const props = withDefaults(defineProps<ModalProps>(), {
@@ -139,7 +140,8 @@ const props = withDefaults(defineProps<ModalProps>(), {
   loading: false,
   contentClass: '',
   isEdicao: false,
-  variant: 'default'
+  variant: 'default',
+  confirmDisabled: false
 })
 
 const emit = defineEmits<{

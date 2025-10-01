@@ -9,9 +9,10 @@
     <Modal
       :model-value="modelValue"
       title="Novo Agendamento"
-      confirm-text="Salvar"
+      :confirm-text="horarioTemConflito ? 'Horário Indisponível' : 'Salvar'"
       cancel-text="Cancelar"
       :loading="saving"
+      :confirm-disabled="horarioTemConflito || saving"
       @confirm="handleSave"
       @cancel="handleCancel"
       @update:model-value="handleUpdateModelValue"
@@ -69,52 +70,75 @@
           </select>
         </div>
 
-        <!-- Campo Hora Início -->
-        <div>
-          <label for="horaInicio" class="block text-sm font-medium text-neutral-700 mb-2">
-            Hora Início
-          </label>
-          <select
-            id="horaInicio"
-            v-model="selectedHoraInicio"
-            :disabled="!selectedData"
-            class="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
-          >
-            <option value="">Selecione a hora de início...</option>
-            <option
-              v-for="horario in horariosDisponiveis"
-              :key="horario.hora"
-              :value="horario.hora"
-              :disabled="!horario.disponivel"
-              :class="horario.disponivel ? '' : 'text-gray-400'"
+        <!-- Campo Hora Início e Hora Fim lado a lado -->
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Campo Hora Início -->
+          <div>
+            <label for="horaInicio" class="block text-sm font-medium text-neutral-700 mb-2">
+              Hora Início
+            </label>
+            <select
+              id="horaInicio"
+              v-model="selectedHoraInicio"
+              :disabled="!selectedData"
+              class="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
             >
-              {{ horario.hora }} {{ horario.disponivel ? '' : '(ocupado)' }}
-            </option>
-          </select>
+              <option value="">Selecione a hora de início...</option>
+              <option
+                v-for="horario in horariosDisponiveis"
+                :key="horario.hora"
+                :value="horario.hora"
+                :disabled="!horario.disponivel"
+                :class="horario.disponivel ? '' : 'text-gray-400'"
+              >
+                {{ horario.hora }} {{ horario.disponivel ? '' : '(ocupado)' }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Campo Hora Fim -->
+          <div>
+            <label for="horaFim" class="block text-sm font-medium text-neutral-700 mb-2">
+              Hora Fim
+            </label>
+            <select
+              id="horaFim"
+              v-model="selectedHoraFim"
+              :disabled="!selectedData"
+              class="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
+            >
+              <option value="">Selecione a hora de fim...</option>
+              <option
+                v-for="horario in horariosDisponiveis"
+                :key="horario.hora"
+                :value="horario.hora"
+                :disabled="!horario.disponivel"
+                :class="horario.disponivel ? '' : 'text-gray-400'"
+              >
+                {{ horario.hora }} {{ horario.disponivel ? '' : '(ocupado)' }}
+              </option>
+            </select>
+          </div>
         </div>
 
-        <!-- Campo Hora Fim -->
-        <div>
-          <label for="horaFim" class="block text-sm font-medium text-neutral-700 mb-2">
-            Hora Fim
-          </label>
-          <select
-            id="horaFim"
-            v-model="selectedHoraFim"
-            :disabled="!selectedData"
-            class="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
-          >
-            <option value="">Selecione a hora de fim...</option>
-            <option
-              v-for="horario in horariosDisponiveis"
-              :key="horario.hora"
-              :value="horario.hora"
-              :disabled="!horario.disponivel"
-              :class="horario.disponivel ? '' : 'text-gray-400'"
-            >
-              {{ horario.hora }} {{ horario.disponivel ? '' : '(ocupado)' }}
-            </option>
-          </select>
+        <!-- Aviso de conflito de horário -->
+        <div v-if="horarioTemConflito" class="bg-red-50 border border-red-200 rounded-md p-3">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-red-800">
+                ⚠️ Horário Indisponível
+              </h3>
+              <div class="mt-2 text-sm text-red-700">
+                <p>O horário selecionado ({{ selectedHoraInicio }} - {{ selectedHoraFim }}) conflita com um agendamento existente.</p>
+                <p class="mt-1">Escolha um horário diferente para continuar.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Campo Título -->
@@ -185,7 +209,7 @@ const emit = defineEmits<{
 }>()
 
 // Usar composable de validação de horários
-const { getHorariosDisponiveis, horarioValido } = useValidacaoHorarios()
+const { getHorariosDisponiveis, horarioValido, horarioConflitaComAgendamentos } = useValidacaoHorarios()
 
 // Estado do modal
 const saving = ref(false)
@@ -235,6 +259,25 @@ const horariosDisponiveis = computed(() => {
 const clienteSelecionado = computed(() => {
   if (!selectedClienteId.value) return null
   return props.clientes.find(cliente => cliente.id === selectedClienteId.value) || null
+})
+
+// Validação de conflito de horário em tempo real
+const horarioTemConflito = computed(() => {
+  if (!selectedData.value || !selectedHoraInicio.value || !selectedHoraFim.value) {
+    return false
+  }
+
+  // Verificar se horário de início é anterior ao horário de fim
+  if (!horarioValido(selectedHoraInicio.value, selectedHoraFim.value)) {
+    return false // Deixar a validação específica para isso
+  }
+
+  return horarioConflitaComAgendamentos(
+    selectedData.value,
+    selectedHoraInicio.value,
+    selectedHoraFim.value,
+    props.agendamentos
+  )
 })
 
 // Limpar campos quando o modal abrir
@@ -295,15 +338,7 @@ const handleSave = async () => {
   }
 
   // Validar conflitos com agendamentos existentes
-  const { horarioConflitaComAgendamentos } = useValidacaoHorarios()
-  const temConflito = horarioConflitaComAgendamentos(
-    selectedData.value,
-    selectedHoraInicio.value,
-    selectedHoraFim.value,
-    props.agendamentos
-  )
-
-  if (temConflito) {
+  if (horarioTemConflito.value) {
     modalError.value = 'Este horário conflita com um agendamento existente'
     return
   }
