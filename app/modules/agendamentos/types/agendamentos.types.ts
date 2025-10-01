@@ -17,4 +17,5 @@ export interface Agendamento {
   descricao: string | null
   cancelado: boolean | null
   cancelado_as: string | null // Timestamp ISO
+  cor: string | null
 }

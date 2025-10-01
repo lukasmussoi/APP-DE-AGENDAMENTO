@@ -6,8 +6,8 @@
 
 <template>
   <div
-    class="slot bg-blue-100 border border-blue-300 rounded overflow-hidden absolute left-0 right-0 transition-all duration-300 hover:scale-105 hover:z-10 hover:shadow-lg"
-    :style="{ top: topPosition + 'px', height: slotHeight + 'px' }"
+    class="slot rounded overflow-hidden absolute left-0 right-0 transition-all duration-300 hover:scale-105 hover:z-10 hover:shadow-lg"
+    :style="{ top: topPosition + 'px', height: slotHeight + 'px', backgroundColor: cor }"
   >
     <div
       class="h-full flex flex-col"
@@ -43,6 +43,7 @@ const props = defineProps<{
   end: Date
   title: string
   description: string
+  cor: string
 }>()
 
 // Altura por hora em pixels

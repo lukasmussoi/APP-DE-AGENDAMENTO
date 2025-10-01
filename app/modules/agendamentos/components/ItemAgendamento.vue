@@ -15,6 +15,7 @@
         :end="slot.end"
         :title="slot.title"
         :description="slot.description"
+        :cor="slot.cor"
         :status="slot.status"
         :class="getStatusClass(slot.status)"
         class="mb-2 last:mb-0 transition-all duration-300"
@@ -95,6 +96,7 @@ const slotsComStatus = computed(() => {
         end,
         title: agendamento.titulo || 'Sem título',
         description: agendamento.descricao || '',
+        cor: agendamento.cor || '#deebfe',
         status: 'confirmado' as const // Por enquanto, todos confirmados
       }
     })
