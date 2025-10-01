@@ -22,20 +22,17 @@
           <label for="cliente" class="block text-sm font-medium text-neutral-700 mb-2">
             Cliente
           </label>
-          <select
-            id="cliente"
-            v-model="selectedClienteId"
-            class="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">Selecione um cliente...</option>
-            <option
-              v-for="cliente in clientes"
-              :key="cliente.id"
-              :value="cliente.id"
-            >
-              {{ cliente.nome }} - {{ cliente.email }}
-            </option>
-          </select>
+          <SearchableSelect
+            :items="clientes"
+            :search-key="['nome', 'email']"
+            display-key="nome"
+            subtitle-key="email"
+            placeholder="Pesquisar cliente..."
+            input-id="cliente"
+            :model-value="clienteSelecionado"
+            @select="selecionarCliente"
+            @clear="limparSelecaoCliente"
+          />
         </div>
 
         <!-- Campo Profissional (somente leitura) -->
@@ -154,6 +151,7 @@
 
 <script setup lang="ts">
 import Modal from '../../../shared/components/ui/Modal.vue'
+import SearchableSelect from '../../../shared/components/ui/SearchableSelect.vue'
 import type { Cliente } from '../../clientes/types/clientes.types'
 
 interface Props {
@@ -201,6 +199,12 @@ const horasDisponiveis = computed(() => {
   return horas
 })
 
+// Cliente selecionado
+const clienteSelecionado = computed(() => {
+  if (!selectedClienteId.value) return null
+  return props.clientes.find(cliente => cliente.id === selectedClienteId.value) || null
+})
+
 // Limpar campos quando o modal abrir
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen) {
@@ -213,6 +217,16 @@ watch(() => props.modelValue, (isOpen) => {
     modalError.value = null
   }
 })
+
+// Função para selecionar cliente
+const selecionarCliente = (cliente: Cliente) => {
+  selectedClienteId.value = cliente.id
+}
+
+// Função para limpar seleção de cliente
+const limparSelecaoCliente = () => {
+  selectedClienteId.value = null
+}
 
 // Função para salvar agendamento
 const handleSave = async () => {
