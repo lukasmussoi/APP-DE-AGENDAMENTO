@@ -6,8 +6,9 @@
 
 <template>
   <div
-    class="slot rounded overflow-hidden absolute left-0 right-0 transition-all duration-300 hover:scale-105 hover:z-10 hover:shadow-lg"
+    class="slot rounded overflow-hidden absolute left-0 right-0 transition-all duration-300 hover:scale-105 hover:z-10 hover:shadow-lg cursor-pointer"
     :style="{ top: topPosition + 'px', height: slotHeight + 'px', backgroundColor: cor }"
+    @click="emit('edit', agendamentoId)"
   >
     <div
       class="h-full flex flex-col"
@@ -44,17 +45,29 @@ const props = defineProps<{
   title: string
   description: string
   cor: string
+  agendamentoId: number
 }>()
 
-// Altura por hora em pixels
+const emit = defineEmits<{
+  'edit': [id: number]
+}>()
+
+// Altura por hora em pixels (deve corresponder ao h-16 da régua = 64px)
 const alturaPorHora = 64
 
 // Calcular posição top baseada na hora de início
 const topPosition = computed(() => {
   const horaInicio = props.start.getHours()
   const minutosInicio = props.start.getMinutes()
+  
+  // Calcular horas desde as 8:00 (início da régua)
   const horasDesde8 = horaInicio - 8
-  return (horasDesde8 * alturaPorHora) + (minutosInicio * (alturaPorHora / 60))
+  
+  // Posição em pixels considerando que cada bloco da régua tem 64px
+  const posicaoBase = horasDesde8 * alturaPorHora
+  const offsetMinutos = (minutosInicio / 60) * alturaPorHora
+  
+  return posicaoBase + offsetMinutos
 })
 
 // Calcular altura baseada na duração

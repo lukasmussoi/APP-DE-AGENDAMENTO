@@ -116,6 +116,185 @@ export const useAgendamentos = () => {
     agendamentos.value = agendamentosSemana
   }
 
+  // Função para editar agendamento existente
+  const editarAgendamento = async (
+    agendamentoId: number,
+    dadosEdicao: {
+      titulo: string
+      descricao: string | null
+      cor: string
+    }
+  ): Promise<Agendamento> => {
+    try {
+      loading.value = true
+      error.value = null
+
+      // Garantir que temos o user_id disponível
+      if (!user.value) {
+        throw new Error('Usuário não autenticado')
+      }
+
+      // Encontrar o agendamento atual no cache primeiro
+      let agendamentoOriginal: Agendamento | null = null
+      for (const [, agendamentosSemana] of cacheSemanas.value) {
+        const encontrado = agendamentosSemana.find(ag => ag.id === agendamentoId)
+        if (encontrado) {
+          agendamentoOriginal = encontrado
+          break
+        }
+      }
+
+      if (!agendamentoOriginal) {
+        throw new Error('Agendamento não encontrado')
+      }
+
+      // Preparar dados para atualização no banco
+      const dadosParaAtualizacao = {
+        titulo: dadosEdicao.titulo,
+        descricao: dadosEdicao.descricao,
+        cor: dadosEdicao.cor
+      }
+
+      // Atualizar no banco de dados
+      const { error: updateError } = await (supabase
+        .from('ag_agendamento') as any)
+        .update(dadosParaAtualizacao)
+        .eq('id', agendamentoId)
+
+      if (updateError) throw updateError
+
+      // Criar agendamento atualizado combinando dados originais com as alterações
+      const agendamentoAtualizado: Agendamento = {
+        ...agendamentoOriginal,
+        titulo: dadosEdicao.titulo,
+        descricao: dadosEdicao.descricao,
+        cor: dadosEdicao.cor
+      }
+
+      // Atualizar cache local imediatamente para renderização
+      const dataAgendamento = new Date(agendamentoAtualizado.data + 'T00:00:00')
+      const chaveSemana = getChaveSemana(dataAgendamento)
+      const chaveSemanaAtual = getChaveSemana(agendamentoStore.dataReferencia)
+      
+      // Atualizar no cache se a semana estiver carregada
+      if (cacheSemanas.value.has(chaveSemana)) {
+        const agendamentosDaSemana = [...(cacheSemanas.value.get(chaveSemana) || [])]
+        const index = agendamentosDaSemana.findIndex(ag => ag.id === agendamentoId)
+        
+        if (index !== -1) {
+          agendamentosDaSemana[index] = agendamentoAtualizado
+          cacheSemanas.value.set(chaveSemana, agendamentosDaSemana)
+          
+          // Se é a semana atual exibida, atualizar agendamentos também
+          if (chaveSemana === chaveSemanaAtual) {
+            agendamentos.value = agendamentosDaSemana
+          }
+        }
+      }
+
+      return agendamentoAtualizado
+    } catch (err: any) {
+      error.value = err.message
+      console.error('Erro ao editar agendamento:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Função para cancelar agendamento
+  const cancelarAgendamento = async (agendamentoId: number): Promise<Agendamento> => {
+    try {
+      loading.value = true
+      error.value = null
+
+      // Garantir que temos o user_id disponível
+      if (!user.value) {
+        throw new Error('Usuário não autenticado')
+      }
+
+      // Encontrar o agendamento atual no cache primeiro
+      let agendamentoOriginal: Agendamento | null = null
+      for (const [, agendamentosSemana] of cacheSemanas.value) {
+        const encontrado = agendamentosSemana.find(ag => ag.id === agendamentoId)
+        if (encontrado) {
+          agendamentoOriginal = encontrado
+          break
+        }
+      }
+
+      if (!agendamentoOriginal) {
+        throw new Error('Agendamento não encontrado')
+      }
+
+      // Tentar usar função SQL para timezone de Brasília
+      const { error: cancelError } = await (supabase as any).rpc('update_cancelado_agendamento', {
+        agendamento_id: agendamentoId
+      })
+      
+      let agendamentoCancelado: Agendamento
+      
+      if (cancelError) {
+        // Se função não existir, usar método padrão
+        console.warn('Função SQL não encontrada, usando método padrão')
+        
+        const agora = new Date().toISOString()
+        const { error: updateError } = await (supabase
+          .from('ag_agendamento') as any)
+          .update({
+            cancelado: true,
+            cancelado_as: agora
+          })
+          .eq('id', agendamentoId)
+          
+        if (updateError) throw updateError
+        
+        agendamentoCancelado = {
+          ...agendamentoOriginal,
+          cancelado: true,
+          cancelado_as: agora
+        }
+        
+        console.log('⏰ Timestamp salvo (UTC):', agora)
+      } else {
+        // Função SQL executada com sucesso
+        agendamentoCancelado = {
+          ...agendamentoOriginal,
+          cancelado: true,
+          cancelado_as: new Date().toISOString() // Será sobrescrito pelo cache na próxima busca
+        }
+        
+        console.log('✅ Função SQL executada - timezone de Brasília aplicado')
+      }
+
+      // Remover do cache local imediatamente (agendamentos cancelados não aparecem)
+      const dataAgendamento = new Date(agendamentoCancelado.data + 'T00:00:00')
+      const chaveSemana = getChaveSemana(dataAgendamento)
+      const chaveSemanaAtual = getChaveSemana(agendamentoStore.dataReferencia)
+      
+      // Remover do cache se a semana estiver carregada
+      if (cacheSemanas.value.has(chaveSemana)) {
+        const agendamentosDaSemana = [...(cacheSemanas.value.get(chaveSemana) || [])]
+        const agendamentosFiltrados = agendamentosDaSemana.filter(ag => ag.id !== agendamentoId)
+        
+        cacheSemanas.value.set(chaveSemana, agendamentosFiltrados)
+        
+        // Se é a semana atual exibida, atualizar agendamentos também
+        if (chaveSemana === chaveSemanaAtual) {
+          agendamentos.value = agendamentosFiltrados
+        }
+      }
+
+      return agendamentoCancelado
+    } catch (err: any) {
+      error.value = err.message
+      console.error('Erro ao cancelar agendamento:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Função para inserir novo agendamento
   const inserirAgendamento = async (dadosFormulario: {
     clienteId: number
@@ -241,6 +420,8 @@ export const useAgendamentos = () => {
     // Actions
     fetchAgendamentos,
     fetchAgendamentosSemana,
-    inserirAgendamento
+    inserirAgendamento,
+    editarAgendamento,
+    cancelarAgendamento
   }
 }

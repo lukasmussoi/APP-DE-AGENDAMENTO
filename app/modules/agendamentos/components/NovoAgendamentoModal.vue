@@ -8,8 +8,8 @@
   <ClientOnly>
     <Modal
       :model-value="modelValue"
-      title="Novo Agendamento"
-      :confirm-text="horarioTemConflito ? 'Horário Indisponível' : 'Salvar'"
+      :title="modoEdicao ? 'Editar Agendamento' : 'Novo Agendamento'"
+      :confirm-text="horarioTemConflito ? 'Horário Indisponível' : (modoEdicao ? 'Atualizar' : 'Salvar')"
       cancel-text="Cancelar"
       :loading="saving"
       :confirm-disabled="horarioTemConflito || saving"
@@ -24,6 +24,7 @@
             Cliente
           </label>
           <SearchableSelect
+            v-if="!modoEdicao"
             :items="clientes"
             :search-key="['nome', 'email']"
             display-key="nome"
@@ -33,6 +34,13 @@
             :model-value="clienteSelecionado"
             @select="selecionarCliente"
             @clear="limparSelecaoCliente"
+          />
+          <input
+            v-else
+            id="cliente"
+            :value="clienteSelecionado ? `${clienteSelecionado.nome} - ${clienteSelecionado.email}` : 'Cliente não encontrado'"
+            readonly
+            class="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm bg-gray-50 text-gray-700"
           />
         </div>
 
@@ -58,7 +66,8 @@
             <select
               id="data"
               v-model="selectedData"
-              class="flex-1 px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              :disabled="modoEdicao"
+              class="flex-1 px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
             >
               <option value="">Selecione uma data...</option>
               <option
@@ -86,7 +95,7 @@
             <select
               id="horaInicio"
               v-model="selectedHoraInicio"
-              :disabled="!selectedData"
+              :disabled="!selectedData || modoEdicao"
               class="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
             >
               <option value="">Selecione a hora de início...</option>
@@ -110,7 +119,7 @@
             <select
               id="horaFim"
               v-model="selectedHoraFim"
-              :disabled="!selectedData"
+              :disabled="!selectedData || modoEdicao"
               class="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
             >
               <option value="">Selecione a hora de fim...</option>
@@ -175,6 +184,21 @@
           ></textarea>
         </div>
 
+        <!-- Botão para cancelar agendamento (apenas no modo edição) -->
+        <div v-if="modoEdicao" class="pt-4 border-t border-gray-200">
+          <button
+            type="button"
+            @click="handleCancelarAgendamento"
+            :disabled="saving"
+            class="w-full bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-md shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            🗑️ Cancelar Agendamento
+          </button>
+          <p class="text-xs text-gray-500 mt-1 text-center">
+            Esta ação não pode ser desfeita
+          </p>
+        </div>
+
         <p v-if="modalError" class="mt-1 text-sm text-red-600">
           {{ modalError }}
         </p>
@@ -198,6 +222,7 @@ interface Props {
   diasSemana: Date[]
   agendamentos: Agendamento[]
   loading?: boolean
+  agendamentoId?: number | null
 }
 
 const props = defineProps<Props>()
@@ -215,6 +240,7 @@ const emit = defineEmits<{
     cor: string
   }]
   'cancel': []
+  'cancelar-agendamento': [id: number]
 }>()
 
 // Usar composable de validação de horários
@@ -225,6 +251,15 @@ const modalError = ref<string | null>(null)
 
 // Usar loading prop ou fallback para saving interno
 const saving = computed(() => props.loading || false)
+
+// Verificar se está em modo de edição
+const modoEdicao = computed(() => !!props.agendamentoId)
+
+// Buscar agendamento para editar
+const agendamentoAtual = computed(() => {
+  if (!props.agendamentoId) return null
+  return props.agendamentos.find(ag => ag.id === props.agendamentoId) || null
+})
 
 // Campos do formulário
 const selectedClienteId = ref<number | null>(null)
@@ -261,7 +296,8 @@ const horariosDisponiveis = computed(() => {
     selectedData.value,
     props.agendamentos,
     horasBase.value,
-    60 // 60 minutos por slot
+    60, // 60 minutos por slot
+    props.agendamentoId || undefined // Excluir o agendamento atual da validação
   )
 
   return horariosComValidacao.value
@@ -287,6 +323,11 @@ const coresDisponiveis = ref([
 
 // Validação de conflito de horário em tempo real
 const horarioTemConflito = computed(() => {
+  // No modo de edição, não verificar conflitos de horário
+  if (modoEdicao.value) {
+    return false
+  }
+
   if (!selectedData.value || !selectedHoraInicio.value || !selectedHoraFim.value) {
     return false
   }
@@ -300,20 +341,34 @@ const horarioTemConflito = computed(() => {
     selectedData.value,
     selectedHoraInicio.value,
     selectedHoraFim.value,
-    props.agendamentos
+    props.agendamentos,
+    props.agendamentoId || undefined // Excluir o agendamento atual da validação
   )
 })
 
-// Limpar campos quando o modal abrir
+// Limpar/popular campos quando o modal abrir
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen) {
-    selectedClienteId.value = null
-    selectedData.value = ''
-    selectedHoraInicio.value = ''
-    selectedHoraFim.value = ''
-    tituloAgendamento.value = ''
-    descricaoAgendamento.value = ''
-    selectedCor.value = '#deebfe'
+    if (modoEdicao.value && agendamentoAtual.value) {
+      // Modo edição - popular campos com dados existentes
+      const agendamento = agendamentoAtual.value
+      selectedClienteId.value = agendamento.cliente_id
+      selectedData.value = agendamento.data || ''
+      selectedHoraInicio.value = agendamento.hora_inicio ? agendamento.hora_inicio.substring(0, 5) : ''
+      selectedHoraFim.value = agendamento.hora_fim ? agendamento.hora_fim.substring(0, 5) : ''
+      tituloAgendamento.value = agendamento.titulo || ''
+      descricaoAgendamento.value = agendamento.descricao || ''
+      selectedCor.value = agendamento.cor || '#deebfe'
+    } else {
+      // Modo criação - limpar campos
+      selectedClienteId.value = null
+      selectedData.value = ''
+      selectedHoraInicio.value = ''
+      selectedHoraFim.value = ''
+      tituloAgendamento.value = ''
+      descricaoAgendamento.value = ''
+      selectedCor.value = '#deebfe'
+    }
     modalError.value = null
   }
 })
@@ -330,54 +385,63 @@ const limparSelecaoCliente = () => {
 
 // Função para salvar agendamento
 const handleSave = async () => {
-  // Validações
-  if (!selectedClienteId.value) {
-    modalError.value = 'Selecione um cliente'
-    return
-  }
-
-  if (!props.userEspecialidade?.id) {
-    modalError.value = 'Profissional não identificado'
-    return
-  }
-
-  if (!selectedData.value) {
-    modalError.value = 'Selecione uma data'
-    return
-  }
-
-  if (!selectedHoraInicio.value) {
-    modalError.value = 'Selecione a hora de início'
-    return
-  }
-
-  if (!selectedHoraFim.value) {
-    modalError.value = 'Selecione a hora de fim'
-    return
-  }
-
-  // Validar se horário de início é anterior ao horário de fim
-  if (!horarioValido(selectedHoraInicio.value, selectedHoraFim.value)) {
-    modalError.value = 'A hora de fim deve ser posterior à hora de início'
-    return
-  }
-
-  // Validar conflitos com agendamentos existentes
-  if (horarioTemConflito.value) {
-    modalError.value = 'Este horário conflita com um agendamento existente'
-    return
-  }
-
+  // Validações básicas para título
   if (!tituloAgendamento.value.trim()) {
     modalError.value = 'Digite um título para o agendamento'
     return
   }
 
+  // Validações específicas para criação (não aplicáveis na edição)
+  if (!modoEdicao.value) {
+    if (!selectedClienteId.value) {
+      modalError.value = 'Selecione um cliente'
+      return
+    }
+
+    if (!props.userEspecialidade?.id) {
+      modalError.value = 'Profissional não identificado'
+      return
+    }
+
+    if (!selectedData.value) {
+      modalError.value = 'Selecione uma data'
+      return
+    }
+
+    if (!selectedHoraInicio.value) {
+      modalError.value = 'Selecione a hora de início'
+      return
+    }
+
+    if (!selectedHoraFim.value) {
+      modalError.value = 'Selecione a hora de fim'
+      return
+    }
+
+    // Validar se horário de início é anterior ao horário de fim
+    if (!horarioValido(selectedHoraInicio.value, selectedHoraFim.value)) {
+      modalError.value = 'A hora de fim deve ser posterior à hora de início'
+      return
+    }
+
+    // Validar conflitos com agendamentos existentes
+    if (horarioTemConflito.value) {
+      modalError.value = 'Este horário conflita com um agendamento existente'
+      return
+    }
+  }
+
   try {
     modalError.value = null
 
+    // Garantir que temos os dados necessários
+    if (!props.userEspecialidade?.id) {
+      modalError.value = 'Dados do profissional não disponíveis'
+      return
+    }
+
     emit('save', {
-      clienteId: selectedClienteId.value,
+      clienteId: selectedClienteId.value || 0,
       profissionalId: props.userEspecialidade.id,
       data: selectedData.value,
       horaInicio: selectedHoraInicio.value,
@@ -401,5 +465,22 @@ const handleCancel = () => {
 // Função para atualizar o model value
 const handleUpdateModelValue = (value: boolean) => {
   emit('update:modelValue', value)
+}
+
+// Função para cancelar agendamento
+const handleCancelarAgendamento = async (event: Event) => {
+  // Evitar propagação do evento para não fechar o modal
+  event.preventDefault()
+  event.stopPropagation()
+  
+  if (props.agendamentoId) {
+    try {
+      emit('cancelar-agendamento', props.agendamentoId)
+      // O modal será fechado pelo componente pai após o cancelamento
+    } catch (error) {
+      console.error('Erro ao cancelar agendamento:', error)
+      modalError.value = 'Erro ao cancelar agendamento. Tente novamente.'
+    }
+  }
 }
 </script>

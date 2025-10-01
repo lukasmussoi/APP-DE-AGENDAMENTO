@@ -52,8 +52,10 @@
 
     <!-- Corpo - parte inferior que ocupa o restante com design moderno -->
     <div class="corpo flex-1 flex bg-white">
-      <!-- Régua de horários à esquerda -->
-      <ReguaHorarios />
+      <!-- Régua de horários à esquerda com padding superior para alinhar -->
+      <div class="pt-4">
+        <ReguaHorarios />
+      </div>
 
       <!-- Área principal de agendamentos com shadow interno -->
       <div class="flex-1 relative pr-8 bg-slate-50 rounded-tl-xl shadow-inner overflow-visible">
@@ -65,6 +67,7 @@
             :data="dia"
             :agendamentos="agendamentos"
             class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-visible"
+            @edit-agendamento="editarAgendamento"
           />
         </div>
       </div>
@@ -79,8 +82,10 @@
     :diasSemana="agendamentoStore.diasSemana"
     :agendamentos="agendamentos"
     :loading="inserting"
+    :agendamento-id="agendamentoParaEditar"
     @save="handleSaveAgendamento"
     @cancel="handleCancelAgendamento"
+    @cancelar-agendamento="handleCancelarAgendamento"
   />
 </template>
 
@@ -122,7 +127,7 @@ import type { Cliente } from '../../clientes/types/clientes.types'
 const { userEspecialidade, loading: loadingUserEspecialidade, fetchUserEspecialidade } = profissionalAtual()
 
 // Usar o composable de agendamentos
-const { agendamentos, loading: loadingAgendamentos, inserting, error: errorAgendamentos, fetchAgendamentos, inserirAgendamento } = useAgendamentos()
+const { agendamentos, loading: loadingAgendamentos, inserting, error: errorAgendamentos, fetchAgendamentos, inserirAgendamento, editarAgendamento: editarAgendamentoComposable, cancelarAgendamento } = useAgendamentos()
 
 // Usar o composable de clientes
 const { clientes, listarClientes } = useClientes()
@@ -132,6 +137,7 @@ const agendamentoStore = useAgendamentoStore()
 
 // Estado do modal
 const showNovoAgendamentoModal = ref(false)
+const agendamentoParaEditar = ref<number | null>(null)
 
 // Buscar dados do usuário e agendamentos ao montar o componente
 onMounted(async () => {
@@ -158,7 +164,7 @@ const incluirNovoAgendamento = async () => {
   showNovoAgendamentoModal.value = true
 }
 
-// Função para salvar agendamento
+// Função para salvar agendamento (inserção ou edição)
 const handleSaveAgendamento = async (data: {
   clienteId: number
   profissionalId: number
@@ -170,17 +176,27 @@ const handleSaveAgendamento = async (data: {
   cor: string
 }) => {
   // Guard para evitar chamadas duplas
-  if (inserting.value) {
-    console.warn('Inserção já em andamento, ignorando chamada duplicada')
+  if (loadingAgendamentos.value) {
+    console.warn('Operação já em andamento, ignorando chamada duplicada')
     return
   }
 
   try {
-    // Usar a função do composable para inserir o agendamento
-    await inserirAgendamento(data)
+    if (agendamentoParaEditar.value) {
+      // Modo edição - apenas título, descrição e cor
+      await editarAgendamentoComposable(agendamentoParaEditar.value, {
+        titulo: data.titulo,
+        descricao: data.descricao,
+        cor: data.cor
+      })
+    } else {
+      // Modo inserção - dados completos
+      await inserirAgendamento(data)
+    }
 
     // Fechar modal após salvar
     showNovoAgendamentoModal.value = false
+    agendamentoParaEditar.value = null
 
   } catch (err: any) {
     // O erro será tratado no modal ou composable
@@ -191,5 +207,47 @@ const handleSaveAgendamento = async (data: {
 // Função para cancelar agendamento
 const handleCancelAgendamento = () => {
   showNovoAgendamentoModal.value = false
+  agendamentoParaEditar.value = null
+}
+
+// Função para editar agendamento
+const editarAgendamento = async (id: number) => {
+  // Evitar ação se já está processando
+  if (inserting.value) return
+
+  // Buscar lista de clientes se não estiver carregada
+  if (clientes.value.length === 0) {
+    try {
+      await listarClientes()
+    } catch (err) {
+      console.error('Erro ao carregar clientes:', err)
+    }
+  }
+
+  agendamentoParaEditar.value = id
+  showNovoAgendamentoModal.value = true
+}
+
+// Função para cancelar agendamento
+const handleCancelarAgendamento = async (id: number) => {
+  // Guard para evitar chamadas duplas
+  if (loadingAgendamentos.value) {
+    console.warn('Operação já em andamento')
+    return
+  }
+
+  try {
+    await cancelarAgendamento(id)
+    
+    // Fechar modal se estiver aberto
+    if (agendamentoParaEditar.value === id) {
+      showNovoAgendamentoModal.value = false
+      agendamentoParaEditar.value = null
+    }
+
+  } catch (err: any) {
+    console.error('Erro ao cancelar agendamento:', err)
+    alert('Erro ao cancelar agendamento: ' + (err.message || 'Erro desconhecido'))
+  }
 }
 </script>
