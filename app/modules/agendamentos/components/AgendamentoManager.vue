@@ -76,6 +76,7 @@
     :userEspecialidade="userEspecialidade"
     :clientes="clientes"
     :diasSemana="agendamentoStore.diasSemana"
+    :agendamentos="agendamentos"
     @save="handleSaveAgendamento"
     @cancel="handleCancelAgendamento"
   />

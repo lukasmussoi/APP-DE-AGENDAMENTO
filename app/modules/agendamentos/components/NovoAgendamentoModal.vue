@@ -82,11 +82,13 @@
           >
             <option value="">Selecione a hora de início...</option>
             <option
-              v-for="hora in horasDisponiveis"
-              :key="hora"
-              :value="hora"
+              v-for="horario in horariosDisponiveis"
+              :key="horario.hora"
+              :value="horario.hora"
+              :disabled="!horario.disponivel"
+              :class="horario.disponivel ? '' : 'text-gray-400'"
             >
-              {{ hora }}
+              {{ horario.hora }} {{ horario.disponivel ? '' : '(ocupado)' }}
             </option>
           </select>
         </div>
@@ -104,11 +106,13 @@
           >
             <option value="">Selecione a hora de fim...</option>
             <option
-              v-for="hora in horasDisponiveis"
-              :key="hora"
-              :value="hora"
+              v-for="horario in horariosDisponiveis"
+              :key="horario.hora"
+              :value="horario.hora"
+              :disabled="!horario.disponivel"
+              :class="horario.disponivel ? '' : 'text-gray-400'"
             >
-              {{ hora }}
+              {{ horario.hora }} {{ horario.disponivel ? '' : '(ocupado)' }}
             </option>
           </select>
         </div>
@@ -152,13 +156,16 @@
 <script setup lang="ts">
 import Modal from '../../../shared/components/ui/Modal.vue'
 import SearchableSelect from '../../../shared/components/ui/SearchableSelect.vue'
+import { useValidacaoHorarios } from '../composables/useValidacaoHorarios'
 import type { Cliente } from '../../clientes/types/clientes.types'
+import type { Agendamento } from '../types/agendamentos.types'
 
 interface Props {
   modelValue: boolean
   userEspecialidade: { id: number | null; nome: string; especialidade: string } | null
   clientes: Cliente[]
   diasSemana: Date[]
+  agendamentos: Agendamento[]
 }
 
 const props = defineProps<Props>()
@@ -177,6 +184,9 @@ const emit = defineEmits<{
   'cancel': []
 }>()
 
+// Usar composable de validação de horários
+const { getHorariosDisponiveis, horarioValido } = useValidacaoHorarios()
+
 // Estado do modal
 const saving = ref(false)
 const modalError = ref<string | null>(null)
@@ -189,14 +199,36 @@ const selectedHoraFim = ref<string>('')
 const tituloAgendamento = ref<string>('')
 const descricaoAgendamento = ref<string>('')
 
-// Horas disponíveis (8:00 às 22:00)
-const horasDisponiveis = computed(() => {
+// Horas disponíveis (8:00 às 22:00) - base para todas as possibilidades
+const horasBase = computed(() => {
   const horas = []
   for (let i = 8; i <= 22; i++) {
     const hora = i.toString().padStart(2, '0') + ':00'
     horas.push(hora)
   }
   return horas
+})
+
+// Horários disponíveis filtrados por conflitos
+const horariosDisponiveis = computed(() => {
+  if (!selectedData.value) {
+    // Se não há data selecionada, mostrar todas as horas como disponíveis
+    return horasBase.value.map(hora => ({
+      hora,
+      disponivel: true,
+      conflito: false
+    }))
+  }
+
+  // Usar o composable para obter horários disponíveis
+  const horariosComValidacao = getHorariosDisponiveis(
+    selectedData.value,
+    props.agendamentos,
+    horasBase.value,
+    60 // 60 minutos por slot
+  )
+
+  return horariosComValidacao.value
 })
 
 // Cliente selecionado
@@ -253,6 +285,26 @@ const handleSave = async () => {
 
   if (!selectedHoraFim.value) {
     modalError.value = 'Selecione a hora de fim'
+    return
+  }
+
+  // Validar se horário de início é anterior ao horário de fim
+  if (!horarioValido(selectedHoraInicio.value, selectedHoraFim.value)) {
+    modalError.value = 'A hora de fim deve ser posterior à hora de início'
+    return
+  }
+
+  // Validar conflitos com agendamentos existentes
+  const { horarioConflitaComAgendamentos } = useValidacaoHorarios()
+  const temConflito = horarioConflitaComAgendamentos(
+    selectedData.value,
+    selectedHoraInicio.value,
+    selectedHoraFim.value,
+    props.agendamentos
+  )
+
+  if (temConflito) {
+    modalError.value = 'Este horário conflita com um agendamento existente'
     return
   }
 
