@@ -157,6 +157,7 @@ const handleSaveAgendamento = async (data: {
   horaFim: string
   titulo: string
   descricao: string | null
+  cor: string
 }) => {
   try {
     const supabase = useSupabaseClient()
@@ -171,6 +172,7 @@ const handleSaveAgendamento = async (data: {
         hora_fim: data.horaFim + ':00+00',
         titulo: data.titulo,
         descricao: data.descricao,
+        cor: data.cor,
         cancelado: false
       })
       .select()

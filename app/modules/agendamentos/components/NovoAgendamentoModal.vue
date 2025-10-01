@@ -54,20 +54,26 @@
           <label for="data" class="block text-sm font-medium text-neutral-700 mb-2">
             Data
           </label>
-          <select
-            id="data"
-            v-model="selectedData"
-            class="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">Selecione uma data...</option>
-            <option
-              v-for="dia in diasSemana"
-              :key="dia.toISOString()"
-              :value="dia.toISOString().split('T')[0]"
+          <div class="flex items-center space-x-3">
+            <select
+              id="data"
+              v-model="selectedData"
+              class="flex-1 px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              {{ dia.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' }) }}
-            </option>
-          </select>
+              <option value="">Selecione uma data...</option>
+              <option
+                v-for="dia in diasSemana"
+                :key="dia.toISOString()"
+                :value="dia.toISOString().split('T')[0]"
+              >
+                {{ dia.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' }) }}
+              </option>
+            </select>
+            <ColorPicker
+              v-model="selectedCor"
+              :cores="coresDisponiveis"
+            />
+          </div>
         </div>
 
         <!-- Campo Hora Início e Hora Fim lado a lado -->
@@ -180,6 +186,7 @@
 <script setup lang="ts">
 import Modal from '../../../shared/components/ui/Modal.vue'
 import SearchableSelect from '../../../shared/components/ui/SearchableSelect.vue'
+import ColorPicker from '../../../shared/components/ui/ColorPicker.vue'
 import { useValidacaoHorarios } from '../composables/useValidacaoHorarios'
 import type { Cliente } from '../../clientes/types/clientes.types'
 import type { Agendamento } from '../types/agendamentos.types'
@@ -204,6 +211,7 @@ const emit = defineEmits<{
     horaFim: string
     titulo: string
     descricao: string | null
+    cor: string
   }]
   'cancel': []
 }>()
@@ -222,6 +230,7 @@ const selectedHoraInicio = ref<string>('')
 const selectedHoraFim = ref<string>('')
 const tituloAgendamento = ref<string>('')
 const descricaoAgendamento = ref<string>('')
+const selectedCor = ref<string>('#deebfe')
 
 // Horas disponíveis (8:00 às 22:00) - base para todas as possibilidades
 const horasBase = computed(() => {
@@ -261,6 +270,18 @@ const clienteSelecionado = computed(() => {
   return props.clientes.find(cliente => cliente.id === selectedClienteId.value) || null
 })
 
+// Cores disponíveis para seleção
+const coresDisponiveis = ref([
+  { value: '#deebfe', label: 'Azul Claro' },
+  { value: '#dbeafe', label: 'Azul Muito Claro' },
+  { value: '#bfdbfe', label: 'Azul Médio' },
+  { value: '#dcfce7', label: 'Verde Claro' },
+  { value: '#fef3c7', label: 'Amarelo Claro' },
+  { value: '#fce7f3', label: 'Rosa Claro' },
+  { value: '#f3e8ff', label: 'Roxo Claro' },
+  { value: '#ecfeff', label: 'Ciano Claro' },
+])
+
 // Validação de conflito de horário em tempo real
 const horarioTemConflito = computed(() => {
   if (!selectedData.value || !selectedHoraInicio.value || !selectedHoraFim.value) {
@@ -289,6 +310,7 @@ watch(() => props.modelValue, (isOpen) => {
     selectedHoraFim.value = ''
     tituloAgendamento.value = ''
     descricaoAgendamento.value = ''
+    selectedCor.value = '#deebfe'
     modalError.value = null
   }
 })
@@ -359,7 +381,8 @@ const handleSave = async () => {
       horaInicio: selectedHoraInicio.value,
       horaFim: selectedHoraFim.value,
       titulo: tituloAgendamento.value.trim(),
-      descricao: descricaoAgendamento.value.trim() || null
+      descricao: descricaoAgendamento.value.trim() || null,
+      cor: selectedCor.value
     })
 
   } catch (err: any) {
