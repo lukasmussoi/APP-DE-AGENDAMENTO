@@ -9,3 +9,9 @@
 
 ## **ICONES DA BIBLIOTECA**
  -  Sempre utilize icones da biblioteca instalada no projeto, não fique criando icones svg se existe uma biblioteca instalada para isso.
+
+## **POLÍTICA DE COMMITS**
+ - **NUNCA** execute comandos Git (add, commit, push) por conta própria
+ - **SOMENTE** execute commits quando explicitamente solicitado pelo desenvolvedor
+ - **SEMPRE** aguarde autorização explícita antes de fazer qualquer operação Git
+ - Use mensagens de commit descritivas e em português quando solicitado
