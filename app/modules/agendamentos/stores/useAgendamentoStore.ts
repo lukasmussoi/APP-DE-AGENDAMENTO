@@ -10,6 +10,7 @@ import { ref, computed } from 'vue'
 export const useAgendamentoStore = defineStore('agendamento', () => {
   // Estado
   const dataReferencia = ref(new Date())
+  const profissionalSelecionado = ref<{ id: number | null; nome: string; especialidade: string } | null>(null)
 
   // Computed para dias da semana (domingo a sábado baseado na dataReferencia)
   const diasSemana = computed(() => {
@@ -44,13 +45,19 @@ export const useAgendamentoStore = defineStore('agendamento', () => {
     dataReferencia.value = novaData
   }
 
+  const setProfissionalSelecionado = (profissional: { id: number | null; nome: string; especialidade: string } | null) => {
+    profissionalSelecionado.value = profissional
+  }
+
   return {
     // Estado
     dataReferencia,
+    profissionalSelecionado,
     diasSemana,
 
     // Ações
     avancarSemana,
-    voltarSemana
+    voltarSemana,
+    setProfissionalSelecionado
   }
 })

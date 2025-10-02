@@ -15,16 +15,7 @@
 
       <!-- Centro: Nome e especialidade do usuário com design moderno -->
       <div class="w-1/3 flex justify-center">
-        <div v-if="userEspecialidade" class="text-center bg-slate-50 px-6 py-3 rounded-xl shadow-sm border border-slate-200">
-          <p class="font-bold text-slate-800 text-lg">{{ userEspecialidade.nome }}</p>
-          <p class="text-sm text-slate-600 font-medium">{{ userEspecialidade.especialidade }}</p>
-        </div>
-        <div v-else-if="loadingUserEspecialidade" class="text-center bg-slate-50 px-6 py-3 rounded-xl animate-pulse">
-          <p class="text-sm text-slate-500">Carregando...</p>
-        </div>
-        <div v-else class="text-center bg-slate-50 px-6 py-3 rounded-xl border border-slate-200">
-          <p class="text-sm text-slate-500">Dados não disponíveis</p>
-        </div>
+        <ProfissionalDisplay />
       </div>
 
       <!-- Espaço para outros controles no lado direito -->
@@ -107,6 +98,9 @@ import ItemAgendamento from './ItemAgendamento.vue'
 
 // Importar componente NovoAgendamentoModal
 import NovoAgendamentoModal from './NovoAgendamentoModal.vue'
+
+// Importar componente ProfissionalDisplay
+import ProfissionalDisplay from './ProfissionalDisplay.vue'
 
 // Importar store de agendamentos
 import { useAgendamentoStore } from '../stores/useAgendamentoStore'

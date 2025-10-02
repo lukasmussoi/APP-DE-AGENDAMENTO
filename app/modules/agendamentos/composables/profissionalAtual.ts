@@ -17,6 +17,7 @@ export const profissionalAtual = () => {
 
   // Estado reativo
   const userEspecialidade = ref<{ id: number | null; nome: string; especialidade: string } | null>(null)
+  const profissionalSelecionado = ref<{ id: number | null; nome: string; especialidade: string } | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -152,6 +153,11 @@ export const profissionalAtual = () => {
         nome: profile.nome,
         especialidade: especialidade.especialidade
       }
+
+      // Inicializar profissional selecionado com o atual se ainda não definido
+      if (!profissionalSelecionado.value) {
+        profissionalSelecionado.value = userEspecialidade.value
+      }
     } catch (err: any) {
       error.value = err.message
       console.error('Erro ao buscar dados do usuário:', err)
@@ -160,14 +166,21 @@ export const profissionalAtual = () => {
     }
   }
 
+  // Função para definir profissional selecionado
+  const setProfissionalSelecionado = (profissional: { id: number | null; nome: string; especialidade: string } | null) => {
+    profissionalSelecionado.value = profissional
+  }
+
   return {
     // Estado
     userEspecialidade,
+    profissionalSelecionado,
     loading,
     error,
     isLoaded,
 
     // Actions
-    fetchUserEspecialidade
+    fetchUserEspecialidade,
+    setProfissionalSelecionado
   }
 }

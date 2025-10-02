@@ -90,19 +90,39 @@
       </NuxtLink>
 
       <!-- Agendamentos -->
-      <NuxtLink
-        to="/agendamentos"
-        :class="[
-          'flex items-center px-3 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors',
-          isCollapsed ? 'justify-center' : '',
-          'group'
-        ]"
-        active-class="bg-blue-100 text-blue-800"
-        :title="isCollapsed ? 'Agendamentos' : ''"
-      >
-        <CalendarDaysIcon class="w-5 h-5 flex-shrink-0" :class="isCollapsed ? '' : 'mr-3'" />
-        <span v-if="!isCollapsed" class="transition-opacity duration-200">Agendamentos</span>
-      </NuxtLink>
+      <div>
+        <button
+          @click="toggleAgendamentosSubmenu"
+          :class="[
+            'flex items-center px-3 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors w-full text-left',
+            isCollapsed ? 'justify-center' : '',
+            'group'
+          ]"
+          :title="isCollapsed ? 'Agendamentos' : ''"
+        >
+          <CalendarDaysIcon class="w-5 h-5 flex-shrink-0" :class="isCollapsed ? '' : 'mr-3'" />
+          <span v-if="!isCollapsed" class="transition-opacity duration-200 flex-1">Agendamentos</span>
+          <ChevronDownIcon v-if="!isCollapsed" :class="['w-4 h-4 transition-transform', isAgendamentosSubmenuOpen ? 'rotate-180' : '']" />
+        </button>
+
+        <!-- Submenu -->
+        <div v-if="isAgendamentosSubmenuOpen && !isCollapsed" class="ml-8 mt-1 space-y-1">
+          <NuxtLink
+            to="/agendamentos"
+            class="flex items-center px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            active-class="bg-blue-100 text-blue-800"
+          >
+            Gerenciar
+          </NuxtLink>
+          <NuxtLink
+            to="/relatorio-agendamentos"
+            class="flex items-center px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            active-class="bg-blue-100 text-blue-800"
+          >
+            Relatório
+          </NuxtLink>
+        </div>
+      </div>
 
       <!-- Clientes -->
       <NuxtLink
@@ -151,7 +171,8 @@ import {
   CalendarDaysIcon,
   UsersIcon,
   BriefcaseIcon,
-  ChevronLeftIcon
+  ChevronLeftIcon,
+  ChevronDownIcon
 } from '@heroicons/vue/24/outline'
 import MenuDropdown from '../ui/MenuDropdown.vue'
 
@@ -165,11 +186,17 @@ const { user, logout } = useAuth()
 
 // Sidebar state
 const isCollapsed = ref(false)
+const isAgendamentosSubmenuOpen = ref(false)
 
 // Toggle sidebar function
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value
   emit('toggle', isCollapsed.value)
+}
+
+// Toggle agendamentos submenu
+const toggleAgendamentosSubmenu = () => {
+  isAgendamentosSubmenuOpen.value = !isAgendamentosSubmenuOpen.value
 }
 
 // Função de logout

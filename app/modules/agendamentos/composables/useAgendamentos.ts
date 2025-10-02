@@ -13,7 +13,6 @@ import type { Agendamento } from '../types/agendamentos.types'
 
 export const useAgendamentos = () => {
   const supabase = useSupabaseClient()
-  const { userEspecialidade, fetchUserEspecialidade } = profissionalAtual()
   const agendamentoStore = useAgendamentoStore()
   const { user } = useAuth()
 
@@ -56,16 +55,18 @@ export const useAgendamentos = () => {
       error.value = null
 
       // Garantir que os dados do profissional estejam carregados
-      if (!userEspecialidade.value) {
-        await fetchUserEspecialidade()
+      if (!agendamentoStore.profissionalSelecionado) {
+        // Se não há profissional selecionado, talvez buscar o atual, mas por enquanto erro
+        error.value = 'Nenhum profissional selecionado'
+        return []
       }
 
-      if (!userEspecialidade.value || !userEspecialidade.value.id) {
+      if (!agendamentoStore.profissionalSelecionado || !agendamentoStore.profissionalSelecionado.id) {
         error.value = 'Dados do profissional não disponíveis'
         return []
       }
 
-      const profissionalId = userEspecialidade.value.id
+      const profissionalId = agendamentoStore.profissionalSelecionado.id
       const chaveSemana = getChaveSemana(dataReferencia)
       const datasSemana = getDatasSemana(dataReferencia)
 
@@ -407,6 +408,20 @@ export const useAgendamentos = () => {
       await fetchAgendamentos()
     },
     { immediate: false } // Não executar na inicialização
+  )
+
+  // Watcher para reagir às mudanças de profissional selecionado
+  watch(
+    () => agendamentoStore.profissionalSelecionado,
+    async (novoProfissional, antigoProfissional) => {
+      if (novoProfissional && novoProfissional.id !== antigoProfissional?.id) {
+        // Limpar cache quando profissional muda
+        cacheSemanas.value.clear()
+        // Recarregar agendamentos para o novo profissional
+        await fetchAgendamentos()
+      }
+    },
+    { immediate: false, deep: true }
   )
 
   return {
