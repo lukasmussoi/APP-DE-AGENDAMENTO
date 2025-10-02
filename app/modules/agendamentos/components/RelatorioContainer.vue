@@ -13,14 +13,25 @@
 
     <!-- Corpo - contém o componente RelatorioCards -->
     <div class="relatorio-body">
-      <!-- Só renderiza o componente quando os dados estiverem carregados -->
-      <RelatorioCards v-if="dataLoaded" />
-      
-      <!-- Loading state enquanto carrega -->
-      <div v-else class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        <span class="ml-3 text-gray-600">Carregando dados do relatório...</span>
-      </div>
+      <!-- ClientOnly para evitar hydration mismatch -->
+      <ClientOnly>
+        <!-- Só renderiza o componente quando os dados estiverem carregados -->
+        <RelatorioCards v-if="dataLoaded" />
+        
+        <!-- Loading state enquanto carrega -->
+        <div v-else class="flex justify-center items-center py-12">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <span class="ml-3 text-gray-600">Carregando dados do relatório...</span>
+        </div>
+        
+        <!-- Fallback para SSR -->
+        <template #fallback>
+          <div class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <span class="ml-3 text-gray-600">Preparando relatório...</span>
+          </div>
+        </template>
+      </ClientOnly>
     </div>
   </div>
 </template>
@@ -40,6 +51,9 @@ const { clientesAtivos, profissionaisAtivos, loading: loadingDados, error: error
 // Estado para controlar se os dados foram carregados
 const dataLoaded = ref(false)
 
+// Flag para evitar múltiplas execuções do carregamento
+const isLoading = ref(false)
+
 // Dados para provide
 const providedData = reactive({
   agendamentosCompletos,
@@ -53,9 +67,16 @@ const providedData = reactive({
 // Expor dados para componentes filhos via provide
 provide('relatorioData', providedData)
 
-// Carregar dados ao montar o componente
-onMounted(async () => {
-  console.log('RelatorioContainer montado, carregando dados...')
+// Função para carregar dados (reutilizável)
+const carregarDados = async () => {
+  // Evitar múltiplas execuções simultâneas
+  if (isLoading.value) {
+    console.log('Carregamento já em andamento, ignorando nova solicitação')
+    return
+  }
+
+  console.log('RelatorioContainer iniciando carregamento de dados...')
+  isLoading.value = true
 
   try {
     // Carregar agendamentos e dados auxiliares em paralelo
@@ -77,6 +98,16 @@ onMounted(async () => {
     console.error('Erro ao carregar dados do relatório:', err)
     // Mesmo com erro, marcar como carregado para mostrar o estado de erro
     dataLoaded.value = true
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Carregar dados ao montar o componente
+onMounted(() => {
+  // Só carregar se ainda não tiver dados ou se não estiver carregando
+  if (!dataLoaded.value && !isLoading.value) {
+    carregarDados()
   }
 })
 </script>
