@@ -1,31 +1,31 @@
 /**
  * PROPÓSITO: Componente filho para exibir agendamentos completos em formato de cards
- * IMPORTA: inject('relatorioData')
+ * IMPORTA: useRelatorioAgendamentosStore
  * USADO_POR: RelatorioContainer
  */
 
 <template>
   <div class="p-6">
     <!-- Loading State -->
-    <div v-if="loading" class="flex justify-center items-center py-12">
+    <div v-if="store.loading" class="flex justify-center items-center py-12">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
       <span class="ml-3 text-gray-600">Carregando agendamentos...</span>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+    <div v-else-if="store.error" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
       <div class="flex items-center">
         <svg class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
         </svg>
-        <span class="text-red-800">Erro ao carregar agendamentos: {{ error }}</span>
+        <span class="text-red-800">Erro ao carregar agendamentos: {{ store.error }}</span>
       </div>
     </div>
 
     <!-- Cards List -->
-    <div v-else-if="agendamentosCompletos.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <div v-else-if="store.agendamentosFiltrados.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-3">
       <div
-        v-for="agendamento in agendamentosCompletos"
+        v-for="agendamento in store.agendamentosFiltrados"
         :key="agendamento.id"
         class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden relative border-l-4"
         :style="{
@@ -119,15 +119,11 @@
 // Importar tipos
 import type { AgendamentoCompleto } from '../stores/useRelatorioAgendamentosStore'
 
-// Injetar dados do componente pai
-const { agendamentosCompletos, loading, error, clientesAtivos, profissionaisAtivos, dataLoaded } = inject<{
-  agendamentosCompletos: Ref<AgendamentoCompleto[]>
-  loading: Ref<boolean>
-  error: Ref<string | null>
-  clientesAtivos: Ref<any[]>
-  profissionaisAtivos: Ref<any[]>
-  dataLoaded: Ref<boolean>
-}>('relatorioData')!
+// Importar store do Pinia
+import { useRelatorioAgendamentosStore } from '../stores/useRelatorioAgendamentosStore'
+
+// Usar o store diretamente
+const store = useRelatorioAgendamentosStore()
 
 // Função para formatar data
 const formatDate = (dateString: string) => {

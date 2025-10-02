@@ -20,26 +20,15 @@ export default defineNuxtConfig({
   // Auto-imports configurados para estrutura modular
   imports: {
     dirs: [
-      'shared/composables/**',
-      'shared/utils/**',
       'app/shared/composables/**',
-      'app/shared/utils/**',
       'app/shared/stores/**',
-      'app/modules/*/composables',
-      'app/modules/*/utils'
+      'app/modules/*/composables'
     ]
   },
   
   // Auto-import de componentes - paths corrigidos
   components: [
-    '~/shared/components',
-    {
-      path: '~/shared/components/**',
-      pathPrefix: false
-    },
-    {
-      path: '~/app/modules/*/components',
-      pathPrefix: false
-    }
+    '~/app/shared/components/**',
+    '~/app/modules/*/components/**'
   ]
 })
