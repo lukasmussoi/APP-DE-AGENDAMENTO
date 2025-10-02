@@ -1,13 +1,17 @@
 /**
  * PROPÓSITO: Página de relatório de agendamentos
- * IMPORTA: Nenhum
+ * IMPORTA: RelatorioContainer
  * USADO_POR: Rota /relatorio-agendamentos
  */
 
 <template>
-  <!-- Página em branco por enquanto -->
+  <RelatorioContainer>
+    <RelatorioCards />
+  </RelatorioContainer>
 </template>
 
 <script setup lang="ts">
-// Página de relatório de agendamentos - em branco
+// Importar componentes
+import RelatorioContainer from '../modules/agendamentos/components/RelatorioContainer.vue'
+import RelatorioCards from '../modules/agendamentos/components/RelatorioCards.vue'
 </script>
