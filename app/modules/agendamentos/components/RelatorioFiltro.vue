@@ -6,7 +6,7 @@
 
 <template>
   <div class="bg-white border-b border-gray-200 p-4">
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
       <!-- Cliente -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Cliente</label>
@@ -68,6 +68,46 @@
             {{ profissional.nome }}
           </option>
         </select>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <div class="flex gap-1">
+          <button
+            @click="filtros.status = 'todos'"
+            :class="[
+              'px-3 py-2 text-sm font-medium rounded-l-md border focus:outline-none focus:ring-2 focus:ring-blue-500',
+              filtros.status === 'todos'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            ]"
+          >
+            Todos
+          </button>
+          <button
+            @click="filtros.status = 'ativos'"
+            :class="[
+              'px-3 py-2 text-sm font-medium border-t border-b focus:outline-none focus:ring-2 focus:ring-blue-500',
+              filtros.status === 'ativos'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            ]"
+          >
+            Ativos
+          </button>
+          <button
+            @click="filtros.status = 'cancelados'"
+            :class="[
+              'px-3 py-2 text-sm font-medium rounded-r-md border focus:outline-none focus:ring-2 focus:ring-blue-500',
+              filtros.status === 'cancelados'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            ]"
+          >
+            Cancelados
+          </button>
+        </div>
       </div>
 
       <!-- Data Início -->
@@ -141,7 +181,8 @@ const filtros = ref({
   especialidadeId: '',
   profissionalId: '',
   dataInicio: '',
-  dataFim: ''
+  dataFim: '',
+  status: 'todos'
 })
 
 // Métodos
@@ -156,7 +197,8 @@ const limparFiltros = () => {
     especialidadeId: '',
     profissionalId: '',
     dataInicio: '',
-    dataFim: ''
+    dataFim: '',
+    status: 'todos'
   }
   store.limparFiltros()
 }
@@ -179,5 +221,10 @@ watch(() => filtros.value.especialidadeId, (novaEspecialidade) => {
       filtros.value.profissionalId = ''
     }
   }
+})
+
+// Watch para aplicar filtros quando status mudar
+watch(() => filtros.value.status, () => {
+  emitirFiltros()
 })
 </script>

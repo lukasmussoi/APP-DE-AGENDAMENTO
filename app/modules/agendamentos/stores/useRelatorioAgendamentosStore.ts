@@ -58,6 +58,7 @@ export interface FiltrosRelatorio {
   profissionalId: string
   dataInicio: string
   dataFim: string
+  status: string // 'todos', 'ativos', 'cancelados'
 }
 
 export interface RpcResponseAgendamentosCompletos {
@@ -81,7 +82,8 @@ export const useRelatorioAgendamentosStore = defineStore('relatorioAgendamentos'
     especialidadeId: '',
     profissionalId: '',
     dataInicio: '',
-    dataFim: ''
+    dataFim: '',
+    status: 'todos'
   })
 
   // Computed para agendamentos filtrados
@@ -124,6 +126,17 @@ export const useRelatorioAgendamentosStore = defineStore('relatorioAgendamentos'
         const dataAgendamento = new Date(agendamento.data)
         const dataFim = new Date(filtrosAtivos.value.dataFim)
         if (dataAgendamento > dataFim) {
+          return false
+        }
+      }
+
+      // Filtro por status (ativo/cancelado)
+      if (filtrosAtivos.value.status !== 'todos') {
+        const isCancelado = agendamento.cancelado || false
+        if (filtrosAtivos.value.status === 'ativos' && isCancelado) {
+          return false
+        }
+        if (filtrosAtivos.value.status === 'cancelados' && !isCancelado) {
           return false
         }
       }
@@ -333,7 +346,8 @@ export const useRelatorioAgendamentosStore = defineStore('relatorioAgendamentos'
       especialidadeId: '',
       profissionalId: '',
       dataInicio: '',
-      dataFim: ''
+      dataFim: '',
+      status: 'todos'
     }
   }
 
