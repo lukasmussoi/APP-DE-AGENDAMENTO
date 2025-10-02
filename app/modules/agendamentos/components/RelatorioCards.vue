@@ -120,12 +120,13 @@
 import type { AgendamentoCompleto } from '../stores/useRelatorioAgendamentosStore'
 
 // Injetar dados do componente pai
-const { agendamentosCompletos, loading, error, clientesAtivos, profissionaisAtivos } = inject<{
+const { agendamentosCompletos, loading, error, clientesAtivos, profissionaisAtivos, dataLoaded } = inject<{
   agendamentosCompletos: Ref<AgendamentoCompleto[]>
   loading: Ref<boolean>
   error: Ref<string | null>
   clientesAtivos: Ref<any[]>
   profissionaisAtivos: Ref<any[]>
+  dataLoaded: Ref<boolean>
 }>('relatorioData')!
 
 // Função para formatar data
