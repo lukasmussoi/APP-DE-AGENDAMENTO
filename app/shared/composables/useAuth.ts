@@ -72,6 +72,56 @@ export const useAuth = () => {
     }
   }
 
+  // Função de reset de senha
+  const resetPassword = async (email: string) => {
+    try {
+      isLoading.value = true
+      error.value = null
+
+      const { data, error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/recuperar-senha`,
+      })
+
+      if (resetError) {
+        error.value = resetError.message
+        return { success: false, error: resetError.message }
+      }
+
+      return { success: true, data }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro desconhecido'
+      error.value = message
+      return { success: false, error: message }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  // Função para atualizar senha (após verificação do token)
+  const updatePassword = async (newPassword: string) => {
+    try {
+      isLoading.value = true
+      error.value = null
+
+      const { data, error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      })
+
+      if (updateError) {
+        error.value = updateError.message
+        return { success: false, error: updateError.message }
+      }
+
+      return { success: true, data }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro desconhecido'
+      error.value = message
+      return { success: false, error: message }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     // Estado
     user,
@@ -82,5 +132,7 @@ export const useAuth = () => {
     // Ações
     login,
     logout,
+    resetPassword,
+    updatePassword,
   }
 }

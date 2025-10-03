@@ -36,8 +36,8 @@ export default defineNuxtConfig({
   supabase: {
     redirectOptions: {
       login: '/login',
-      callback: '/',
-      exclude: ['/esqueci-senha', '/login']
+      callback: '/recuperar-senha',
+      exclude: ['/esqueci-senha', '/recuperar-senha', '/login']
     }
   }
 })

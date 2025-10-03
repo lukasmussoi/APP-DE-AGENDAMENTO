@@ -64,9 +64,9 @@
         </div>
 
         <div class="text-sm">
-          <a href="#" class="font-medium text-primary-600 hover:text-primary-500">
+          <NuxtLink to="/esqueci-senha" class="font-medium text-primary-600 hover:text-primary-500">
             Esqueceu a senha?
-          </a>
+          </NuxtLink>
         </div>
       </div>
 
