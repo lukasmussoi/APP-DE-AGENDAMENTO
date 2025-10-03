@@ -61,8 +61,9 @@
 
     <!-- Botão Salvar -->
     <div class="flex justify-end">
-      <Button type="submit" variant="primary">
-        Salvar Alterações
+      <Button type="submit" variant="primary" :disabled="isSubmitting">
+        <span v-if="isSubmitting">Salvando...</span>
+        <span v-else>Salvar Alterações</span>
       </Button>
     </div>
   </form>
@@ -70,10 +71,17 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { toast } from 'vue3-toastify'
 
 // Importar componentes UI reutilizáveis
 import Input from '~/shared/components/ui/Input.vue'
 import Button from '~/shared/components/ui/Button.vue'
+
+// Importar composable de usuários
+import { useUsuarios } from '../composables/usuarios'
+
+// Usar composable
+const { updateUserName, updateUserEmail, updateUserPassword } = useUsuarios()
 
 // Estado reativo para os campos
 const nome = ref('')
@@ -81,9 +89,53 @@ const email = ref('')
 const senha = ref('')
 const confirmarSenha = ref('')
 
-// Função de submit (placeholder por enquanto)
-const handleSubmit = () => {
-  // TODO: Implementar lógica de atualização de perfil
-  console.log('Salvando perfil:', { nome: nome.value, email: email.value, senha: senha.value, confirmarSenha: confirmarSenha.value })
+// Estado para feedback
+const isSubmitting = ref(false)
+
+// Função de submit
+const handleSubmit = async () => {
+  // Validações básicas
+  if (senha.value && senha.value !== confirmarSenha.value) {
+    toast.error('As senhas não coincidem')
+    return
+  }
+
+  if (!nome.value && !email.value && !senha.value) {
+    toast.error('Preencha pelo menos um campo para atualizar')
+    return
+  }
+
+  isSubmitting.value = true
+
+  try {
+    // Atualizar nome se preenchido
+    if (nome.value) {
+      await updateUserName(nome.value)
+    }
+
+    // Atualizar email se preenchido
+    if (email.value) {
+      await updateUserEmail(email.value)
+    }
+
+    // Atualizar senha se preenchida
+    if (senha.value) {
+      await updateUserPassword(senha.value)
+    }
+
+    // Sucesso - apenas um toast
+    toast.success('Perfil atualizado com sucesso!')
+
+    // Limpar campos de senha
+    senha.value = ''
+    confirmarSenha.value = ''
+
+  } catch (err) {
+    // Erro - apenas um toast
+    toast.error('Erro ao atualizar perfil. Tente novamente.')
+    console.error('Erro ao atualizar perfil:', err)
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>

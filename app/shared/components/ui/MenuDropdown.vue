@@ -71,6 +71,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { navigateTo } from '#app'
+import { useProfileStore } from '../../stores/useProfileStore'
 import {
   ChevronDownIcon,
   UserIcon,
@@ -93,13 +94,22 @@ const props = withDefaults(defineProps<Props>(), {
   isCollapsed: false
 })
 
+// Stores
+const profileStore = useProfileStore()
+
 // State
 const isOpen = ref(false)
 const isLoggingOut = ref(false)
 
 // Computed
 const userName = computed(() => {
+  // Primeiro tenta usar o nome do perfil (tabela ag_profiles)
+  if (profileStore.currentProfile?.nome) {
+    return profileStore.currentProfile.nome
+  }
+  // Fallback para o nome do auth user
   if (props.user?.name) return props.user.name
+  // Fallback para parte do email
   if (props.user?.email) return props.user.email.split('@')[0]
   return 'Usuário'
 })
