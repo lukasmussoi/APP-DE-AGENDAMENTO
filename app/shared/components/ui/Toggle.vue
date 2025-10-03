@@ -16,7 +16,7 @@ const props = defineProps({ modelValue: { type: Boolean, default: false } })
 const emit = defineEmits(['update:modelValue'])
 
 const buttonClass = computed(() => props.modelValue ? 'bg-primary-600' : 'bg-neutral-300')
-const knobClass = computed(() => props.modelValue ? 'translate-x-4' : 'translate-x-0')
+const knobClass = computed(() => props.modelValue ? 'translate-x-1' : '-translate-x-0')
 
 function toggle() { emit('update:modelValue', !props.modelValue) }
 </script>

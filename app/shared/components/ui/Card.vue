@@ -11,12 +11,11 @@
     <div>
       <slot />
     </div>
-    <div v-if="$slots.footer" class="mt-4">
-      <slot name="footer" />
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const props = defineProps({ className: { type: String, default: '' } })
+const props = defineProps({
+  className: { type: String, default: '' }
+})
 </script>

@@ -4,7 +4,7 @@
  * USADO_POR: Página inicial e componentes relacionados a estatísticas
  */
 
-import type { DashboardStats } from '../../../../shared/types/dashboard.types'
+import type { DashboardStats } from '../../types/dashboard.types'
 
 export const useDashboardStats = () => {
   const stats = ref<DashboardStats>({
