@@ -30,5 +30,14 @@ export default defineNuxtConfig({
   components: [
     '~/app/shared/components/**',
     '~/app/modules/*/components/**'
-  ]
+  ],
+
+  // Configuração do Supabase para permitir páginas públicas
+  supabase: {
+    redirectOptions: {
+      login: '/login',
+      callback: '/',
+      exclude: ['/esqueci-senha', '/login']
+    }
+  }
 })
