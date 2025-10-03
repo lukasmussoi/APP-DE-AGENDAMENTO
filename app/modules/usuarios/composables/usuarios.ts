@@ -118,19 +118,34 @@ export const useUsuarios = () => {
         throw new Error('Usuário não autenticado')
       }
 
+      console.log('Enviando RPC para atualizar nome:', nome)
       const { data: rpcData, error: profileError } = await supabase
         .rpc('ag_editar_nome_usuario', {
           p_nome: nome
         } as any)
 
+      console.log('Resposta da RPC:', { rpcData, profileError })
+
       if (profileError) {
         throw new Error(`Erro ao atualizar nome: ${profileError.message}`)
       }
 
-      // Verificar resposta da RPC
-      const response = (rpcData as any)?.[0]?.ag_editar_nome_usuario
-      if (!response?.success) {
-        throw new Error('Falha ao atualizar nome do usuário')
+      // Verificar resposta da RPC - tentar diferentes estruturas possíveis
+      let response = null
+      const data = rpcData as any
+
+      if (Array.isArray(data) && data.length > 0) {
+        response = data[0]?.ag_editar_nome_usuario
+      } else if (data?.ag_editar_nome_usuario) {
+        response = data.ag_editar_nome_usuario
+      } else if (data?.success !== undefined) {
+        response = data
+      }
+
+      console.log('Resposta processada:', response)
+
+      if (!response || response.success !== true) {
+        throw new Error(response?.message || 'Falha ao atualizar nome do usuário')
       }
 
       console.log('Nome atualizado com sucesso:', response.message)
@@ -158,11 +173,13 @@ export const useUsuarios = () => {
         throw new Error('Usuário não autenticado')
       }
 
+      console.log('Atualizando email para:', email)
       const { error: authError } = await supabase.auth.updateUser({
         email: email
       })
 
       if (authError) {
+        console.error('Erro do Supabase Auth:', authError)
         throw new Error(`Erro ao atualizar email: ${authError.message}`)
       }
 
@@ -191,11 +208,13 @@ export const useUsuarios = () => {
         throw new Error('Usuário não autenticado')
       }
 
+      console.log('Atualizando senha')
       const { error: authError } = await supabase.auth.updateUser({
         password: senha
       })
 
       if (authError) {
+        console.error('Erro do Supabase Auth:', authError)
         throw new Error(`Erro ao atualizar senha: ${authError.message}`)
       }
 

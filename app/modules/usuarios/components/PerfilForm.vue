@@ -108,19 +108,27 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
+    console.log('Iniciando atualização de perfil...')
+
     // Atualizar nome se preenchido
     if (nome.value) {
+      console.log('Atualizando nome:', nome.value)
       await updateUserName(nome.value)
+      console.log('Nome atualizado com sucesso')
     }
 
     // Atualizar email se preenchido
     if (email.value) {
+      console.log('Atualizando email:', email.value)
       await updateUserEmail(email.value)
+      console.log('Email atualizado com sucesso')
     }
 
     // Atualizar senha se preenchida
     if (senha.value) {
+      console.log('Atualizando senha')
       await updateUserPassword(senha.value)
+      console.log('Senha atualizada com sucesso')
     }
 
     // Sucesso - apenas um toast
@@ -131,9 +139,10 @@ const handleSubmit = async () => {
     confirmarSenha.value = ''
 
   } catch (err) {
+    console.error('Erro completo ao atualizar perfil:', err)
     // Erro - apenas um toast
-    toast.error('Erro ao atualizar perfil. Tente novamente.')
-    console.error('Erro ao atualizar perfil:', err)
+    const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+    toast.error(`Erro ao atualizar perfil: ${errorMessage}`)
   } finally {
     isSubmitting.value = false
   }
