@@ -70,6 +70,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { navigateTo } from '#app'
 import {
   ChevronDownIcon,
   UserIcon,
@@ -118,8 +119,7 @@ const toggleDropdown = () => {
 }
 
 const handleProfile = () => {
-  // TODO: Implementar navegação para perfil
-  console.log('Navegar para perfil')
+  navigateTo('/perfil')
   isOpen.value = false
 }
 
