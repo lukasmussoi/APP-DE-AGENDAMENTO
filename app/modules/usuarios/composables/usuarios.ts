@@ -150,6 +150,15 @@ export const useUsuarios = () => {
 
       console.log('Nome atualizado com sucesso:', response.message)
 
+      // Atualizar o perfil no store Pinia localmente
+      if (profileStore.currentProfile) {
+        profileStore.currentProfile = {
+          ...profileStore.currentProfile,
+          nome: nome
+        }
+        console.log('Perfil atualizado no store Pinia:', profileStore.currentProfile)
+      }
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
       error.value = errorMessage
