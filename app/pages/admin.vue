@@ -18,31 +18,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-
-// Definir middleware para esta página
+// Aplicar middleware de admin para proteger a página
 definePageMeta({
-  middleware: 'admin-only'
-})
-
-// Verificar se usuário é admin ao carregar a página
-onMounted(async () => {
-  const user = useSupabaseUser()
-  if (user.value) {
-    const supabase = useSupabaseClient()
-    const { data: profile } = await supabase
-      .from('ag_profiles')
-      .select('role')
-      .eq('user_id', user.value.id)
-      .single()
-
-    if (!profile || (profile as any).role !== 'admin') {
-      // Redirecionar se não for admin
-      await navigateTo('/')
-    }
-  } else {
-    // Redirecionar se não estiver logado
-    await navigateTo('/login')
-  }
+  middleware: 'admin' as any
 })
 </script>

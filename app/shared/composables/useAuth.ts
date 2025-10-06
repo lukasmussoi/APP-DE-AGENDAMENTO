@@ -147,21 +147,46 @@ export const useAuth = () => {
     }
   }
 
-  // Função para verificar se o usuário é admin
-  const isAdmin = async (): Promise<boolean> => {
+  // Função para verificar se o usuário logado é admin
+  const isAdmin = async () => {
     try {
-      const { data, error } = await supabase.rpc('ag_is_admin')
-
-      if (error) {
-        console.error('Erro ao verificar se é admin:', error)
-        return false
+      // Verificar se existe usuário logado
+      if (!user.value) {
+        return { success: false, isAdmin: false, error: 'Usuário não autenticado' }
       }
 
-      // A RPC retorna [{ ag_is_admin: { isadmin: boolean } }]
-      return (data as any)?.[0]?.ag_is_admin?.isadmin === true
+      const { data, error: rpcError } = await supabase.rpc('ag_is_admin') as { 
+        data: any, 
+        error: any 
+      }
+
+      if (rpcError) {
+        console.error('Erro ao verificar se usuário é admin:', rpcError)
+        return { success: false, isAdmin: false, error: rpcError.message }
+      }
+
+      // Processar resposta da RPC - extrair o valor booleano
+      let isAdminValue = false
+      
+      // A RPC está retornando diretamente { "isadmin": boolean }
+      if (data && typeof data.isadmin === 'boolean') {
+        isAdminValue = data.isadmin
+      } else if (Array.isArray(data) && data.length > 0) {
+        // Fallback para estrutura de array (caso mude no futuro)
+        const response = data[0]
+        
+        if (response && response.ag_is_admin && typeof response.ag_is_admin.isadmin === 'boolean') {
+          isAdminValue = response.ag_is_admin.isadmin
+        } else if (response && typeof response.isadmin === 'boolean') {
+          isAdminValue = response.isadmin
+        }
+      }
+
+      return { success: true, isAdmin: isAdminValue }
     } catch (err) {
-      console.error('Erro inesperado ao verificar admin:', err)
-      return false
+      const message = err instanceof Error ? err.message : 'Erro desconhecido'
+      console.error('Erro ao verificar admin:', err)
+      return { success: false, isAdmin: false, error: message }
     }
   }
 

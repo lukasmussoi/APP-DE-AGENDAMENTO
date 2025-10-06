@@ -179,7 +179,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAuth } from '../../composables/useAuth'
 import { useProfileStore } from '../../stores/useProfileStore'
 import {
@@ -200,22 +200,45 @@ const emit = defineEmits<{
 }>()
 
 // Auth composable
-const { user, logout } = useAuth()
+const { user, logout, isAdmin: checkIsAdmin } = useAuth()
 const profileStore = useProfileStore()
 
-// Computed para verificar se é admin
-const isAdmin = computed(() => profileStore.currentProfile?.role === 'admin')
+// Estado reativo para admin
+const isAdmin = ref(false)
 
 // Sidebar state
 const isCollapsed = ref(false)
 const isAgendamentosSubmenuOpen = ref(false)
 
-// Buscar perfil ao montar
+// Função para verificar admin
+const verificarAdmin = async () => {
+  if (user.value) {
+    const adminResult = await checkIsAdmin()
+    if (adminResult.success) {
+      isAdmin.value = adminResult.isAdmin
+    }
+  } else {
+    isAdmin.value = false
+  }
+}
+
+// Buscar perfil e verificar admin ao montar
 onMounted(async () => {
   if (user.value) {
     await profileStore.fetchProfileByUserId(user.value.id)
+    await verificarAdmin()
   }
 })
+
+// Observar mudanças no usuário
+watch(user, async (newUser) => {
+  if (newUser) {
+    await profileStore.fetchProfileByUserId(newUser.id)
+    await verificarAdmin()
+  } else {
+    isAdmin.value = false
+  }
+}, { immediate: true })
 
 // Toggle sidebar function
 const toggleSidebar = () => {
