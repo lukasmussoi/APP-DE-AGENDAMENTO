@@ -81,6 +81,7 @@ export interface RpcResponseDadosAdmin {
 // Tipos para listagem de usuários admin
 export interface UsuarioListaAdmin {
   id: number
+  user_id: string
   nome: string
   role: 'admin' | 'user'
 }

@@ -119,36 +119,18 @@ export const useUsuarios = () => {
     error.value = null
 
     try {
-      const { data: rpcData, error: rpcError } = await supabase
-        .rpc('ag_listar_usuarios_admin')
-
-      if (rpcError) {
-        throw new Error(`Erro na RPC: ${rpcError.message}`)
-      }
-
-      if (!rpcData) {
-        throw new Error('Nenhum dado retornado pela RPC')
-      }
-
-      // Processar resposta da RPC
-      let response = null
-      const data = rpcData as any
+      // Primeiro, buscar os dados completos via fetchDadosAdmin
+      await fetchDadosAdmin()
       
-      // Tentar formato direto primeiro (atual)
-      if (data && data.success !== undefined) {
-        response = data
-      } 
-      // Fallback para formato array com objeto aninhado
-      else if (Array.isArray(data) && data.length > 0) {
-        response = data[0]?.ag_listar_usuarios_admin
-      }
+      // Mapear os perfis para o formato UsuarioListaAdmin incluindo user_id
+      usuariosLista.value = perfis.value.map(perfil => ({
+        id: perfil.id,
+        user_id: perfil.user_id,
+        nome: perfil.nome,
+        role: perfil.role
+      }))
 
-      if (!response || !response.success) {
-        throw new Error(response?.message || 'Falha ao buscar usuários')
-      }
-
-      // Atualizar estado reativo
-      usuariosLista.value = response.data || []
+      console.log('Lista de usuários mapeada:', usuariosLista.value)
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'

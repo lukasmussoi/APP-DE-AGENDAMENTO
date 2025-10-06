@@ -73,6 +73,18 @@
                 {{ usuario.role }}
               </Badge>
             </TableCell>
+            <TableCell class="text-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                @click="openDeleteModal(usuario)"
+                :disabled="loading || deletingUser"
+                class="!p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                title="Deletar usuário"
+              >
+                <TrashIcon class="w-4 h-4" />
+              </Button>
+            </TableCell>
           </TableRow>
         </TableBody>
       </Table>
@@ -94,6 +106,35 @@
     v-model="showNovoUsuarioModal"
     @usuario-criado="handleUsuarioCriado"
   />
+
+  <!-- Modal de confirmação de deleção -->
+  <Modal
+    v-model="showDeleteModal"
+    title="Confirmar Deleção"
+    variant="danger"
+    :loading="deletingUser"
+    :closable-backdrop="!deletingUser"
+    confirm-text="Deletar"
+    cancel-text="Cancelar"
+    @confirm="handleConfirmDelete"
+    @cancel="handleCancelDelete"
+  >
+    <div class="flex items-start space-x-3">
+      <div class="flex-shrink-0">
+        <ExclamationCircleIcon class="w-6 h-6 text-red-600" />
+      </div>
+      <div class="flex-grow">
+        <p class="text-sm text-gray-900">
+          Tem certeza que deseja deletar o usuário 
+          <strong>{{ usuarioParaDeletar?.nome }}</strong>?
+        </p>
+        <p class="mt-2 text-sm text-gray-600">
+          Esta ação não pode ser desfeita. O usuário será removido permanentemente 
+          do sistema de autenticação e da tabela de perfis.
+        </p>
+      </div>
+    </div>
+  </Modal>
 </template>
 
 <script setup lang="ts">
@@ -105,8 +146,10 @@ import TableRow from '../../../shared/components/ui/TableRow.vue'
 import TableCell from '../../../shared/components/ui/TableCell.vue'
 import Button from '../../../shared/components/ui/Button.vue'
 import Badge from '../../../shared/components/ui/Badge.vue'
+import Modal from '../../../shared/components/ui/Modal.vue'
 import NovoUsuarioModal from './NovoUsuarioModal.vue'
-import { ExclamationCircleIcon, UsersIcon } from '@heroicons/vue/24/outline'
+import { useDeletarUsuario } from '../composables/deletarUsuario'
+import { ExclamationCircleIcon, UsersIcon, TrashIcon } from '@heroicons/vue/24/outline'
 
 interface Props {
   usuarios: readonly UsuarioListaAdmin[]
@@ -126,13 +169,19 @@ const emit = defineEmits<Emits>()
 const tableColumns = [
   { key: 'id', label: 'ID', class: 'w-20' },
   { key: 'nome', label: 'Nome' },
-  { key: 'role', label: 'Role', class: 'w-32' }
+  { key: 'role', label: 'Role', class: 'w-32' },
+  { key: 'acoes', label: 'Ações', class: 'w-24' }
 ]
 
-// Estado do modal
+// Estado dos modais
 const showNovoUsuarioModal = ref(false)
+const showDeleteModal = ref(false)
+const usuarioParaDeletar = ref<UsuarioListaAdmin | null>(null)
 
-// Handlers do modal
+// Composable para deleção
+const { loading: deletingUser, deletarUsuario } = useDeletarUsuario()
+
+// Handlers do modal de criação
 const openNovoUsuarioModal = () => {
   showNovoUsuarioModal.value = true
 }
@@ -141,5 +190,29 @@ const handleUsuarioCriado = () => {
   console.log('Usuário criado com sucesso! Recarregando lista...')
   // Emitir evento para a página principal recarregar os dados
   emit('usuario-criado')
+}
+
+// Handlers do modal de deleção
+const openDeleteModal = (usuario: UsuarioListaAdmin) => {
+  usuarioParaDeletar.value = usuario
+  showDeleteModal.value = true
+}
+
+const handleConfirmDelete = async () => {
+  if (!usuarioParaDeletar.value) return
+
+  const success = await deletarUsuario(usuarioParaDeletar.value.user_id)
+  
+  if (success) {
+    showDeleteModal.value = false
+    usuarioParaDeletar.value = null
+    // Emitir evento para recarregar a lista
+    emit('usuario-criado') // Reutilizando o mesmo evento
+  }
+}
+
+const handleCancelDelete = () => {
+  showDeleteModal.value = false
+  usuarioParaDeletar.value = null
 }
 </script>
