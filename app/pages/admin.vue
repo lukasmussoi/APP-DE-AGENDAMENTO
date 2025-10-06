@@ -19,6 +19,7 @@
           :loading="loading"
           :error="error"
           @retry="handleRetry"
+          @usuario-criado="handleUsuarioCriado"
         />
       </div>
     </div>
@@ -26,6 +27,7 @@
 </template>
 
 <script setup lang="ts">
+import { toast } from 'vue3-toastify'
 import { useUsuarios } from '../modules/usuarios/composables/usuarios'
 import TabelaUsuarios from '../modules/usuarios/components/TabelaUsuarios.vue'
 
@@ -57,5 +59,12 @@ onMounted(async () => {
 // Handler para retry
 const handleRetry = async () => {
   await fetchUsuariosAdmin()
+}
+
+// Handler para quando um usuário é criado
+const handleUsuarioCriado = async () => {
+  console.log('Usuário criado! Recarregando lista...')
+  await fetchUsuariosAdmin()
+  // Removido toast aqui - apenas o toast de sucesso da criação é suficiente
 }
 </script>

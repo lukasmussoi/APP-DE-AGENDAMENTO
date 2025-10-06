@@ -29,9 +29,7 @@ export default defineNuxtConfig({
   // Auto-import de componentes - paths corrigidos
   components: [
     '~/app/shared/components',
-    '~/app/shared/components/**',
-    '~/app/modules/*/components',
-    '~/app/modules/*/components/**'
+    '~/app/modules/*/components'
   ],
 
   // Configuração do Supabase para permitir páginas públicas

@@ -95,6 +95,7 @@
                     :variant="variant === 'danger' ? 'danger' : 'solid'"
                     @click="handleConfirm"
                     :disabled="loading || confirmDisabled"
+                    :loading="loading"
                   >
                     {{ confirmText }}
                   </Button>
@@ -176,6 +177,7 @@ const handleBackdropClick = () => {
 }
 
 const handleConfirm = () => {
+  if (props.loading) return // Prevenir clique durante loading
   emit('confirm')
 }
 

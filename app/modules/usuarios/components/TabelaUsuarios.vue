@@ -90,95 +90,10 @@
   </div>
 
   <!-- Modal para adicionar usuário -->
-  <ClientOnly>
-    <Modal
-      v-model="showNovoUsuarioModal"
-      title="Novo Usuário"
-      confirm-text="Salvar"
-      cancel-text="Cancelar"
-      :loading="saving"
-      @confirm="handleSaveUsuario"
-      @cancel="handleCancelUsuario"
-    >
-      <div class="space-y-4">
-        <!-- Nome Completo -->
-        <div>
-          <label for="nome" class="block text-sm font-medium text-neutral-700 mb-2">
-            Nome Completo
-          </label>
-          <Input
-            id="nome"
-            v-model="novoUsuario.nome"
-            type="text"
-            placeholder="Digite o nome completo"
-            required
-          />
-        </div>
-
-        <!-- E-mail -->
-        <div>
-          <label for="email" class="block text-sm font-medium text-neutral-700 mb-2">
-            E-mail
-          </label>
-          <Input
-            id="email"
-            v-model="novoUsuario.email"
-            type="email"
-            placeholder="Digite o e-mail"
-            required
-          />
-        </div>
-
-        <!-- Senha -->
-        <div>
-          <label for="senha" class="block text-sm font-medium text-neutral-700 mb-2">
-            Senha
-          </label>
-          <Input
-            id="senha"
-            v-model="novoUsuario.senha"
-            type="password"
-            placeholder="Digite a senha"
-            required
-          />
-        </div>
-
-        <!-- Confirmar Senha -->
-        <div>
-          <label for="confirmar-senha" class="block text-sm font-medium text-neutral-700 mb-2">
-            Confirmar Senha
-          </label>
-          <Input
-            id="confirmar-senha"
-            v-model="novoUsuario.confirmarSenha"
-            type="password"
-            placeholder="Confirme a senha"
-            required
-          />
-        </div>
-
-        <!-- Tipo de Usuário -->
-        <div>
-          <label for="role" class="block text-sm font-medium text-neutral-700 mb-2">
-            Tipo de Usuário
-          </label>
-          <select
-            id="role"
-            v-model="novoUsuario.role"
-            class="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">Selecione o tipo de usuário...</option>
-            <option value="user">Usuário</option>
-            <option value="admin">Administrador</option>
-          </select>
-        </div>
-
-        <p v-if="modalError" class="mt-1 text-sm text-red-600">
-          {{ modalError }}
-        </p>
-      </div>
-    </Modal>
-  </ClientOnly>
+  <NovoUsuarioModal
+    v-model="showNovoUsuarioModal"
+    @usuario-criado="handleUsuarioCriado"
+  />
 </template>
 
 <script setup lang="ts">
@@ -190,8 +105,7 @@ import TableRow from '../../../shared/components/ui/TableRow.vue'
 import TableCell from '../../../shared/components/ui/TableCell.vue'
 import Button from '../../../shared/components/ui/Button.vue'
 import Badge from '../../../shared/components/ui/Badge.vue'
-import Modal from '../../../shared/components/ui/Modal.vue'
-import Input from '../../../shared/components/ui/Input.vue'
+import NovoUsuarioModal from './NovoUsuarioModal.vue'
 import { ExclamationCircleIcon, UsersIcon } from '@heroicons/vue/24/outline'
 
 interface Props {
@@ -202,10 +116,11 @@ interface Props {
 
 interface Emits {
   retry: []
+  'usuario-criado': []
 }
 
 defineProps<Props>()
-defineEmits<Emits>()
+const emit = defineEmits<Emits>()
 
 // Configuração das colunas da tabela
 const tableColumns = [
@@ -216,83 +131,15 @@ const tableColumns = [
 
 // Estado do modal
 const showNovoUsuarioModal = ref(false)
-const saving = ref(false)
-const modalError = ref<string | null>(null)
-
-// Dados do novo usuário
-const novoUsuario = ref({
-  nome: '',
-  email: '',
-  senha: '',
-  confirmarSenha: '',
-  role: ''
-})
 
 // Handlers do modal
 const openNovoUsuarioModal = () => {
-  // Limpar campos e abrir modal
-  novoUsuario.value = {
-    nome: '',
-    email: '',
-    senha: '',
-    confirmarSenha: '',
-    role: ''
-  }
-  modalError.value = null
   showNovoUsuarioModal.value = true
 }
 
-const handleSaveUsuario = async () => {
-  // TODO: Implementar validação e salvamento
-  console.log('Salvar usuário:', novoUsuario.value)
-  
-  // Validação básica
-  if (!novoUsuario.value.nome) {
-    modalError.value = 'Nome é obrigatório'
-    return
-  }
-  
-  if (!novoUsuario.value.email) {
-    modalError.value = 'E-mail é obrigatório'
-    return
-  }
-  
-  if (!novoUsuario.value.senha) {
-    modalError.value = 'Senha é obrigatória'
-    return
-  }
-  
-  if (novoUsuario.value.senha !== novoUsuario.value.confirmarSenha) {
-    modalError.value = 'As senhas não coincidem'
-    return
-  }
-  
-  if (!novoUsuario.value.role) {
-    modalError.value = 'Selecione o tipo de usuário'
-    return
-  }
-
-  try {
-    saving.value = true
-    modalError.value = null
-
-    // TODO: Chamar função do composable para criar usuário
-    
-    // Simular delay para mostrar loading
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Fechar modal após salvar
-    showNovoUsuarioModal.value = false
-    console.log('Usuário criado com sucesso!')
-  } catch (err: any) {
-    modalError.value = err.message || 'Erro ao criar usuário'
-  } finally {
-    saving.value = false
-  }
-}
-
-const handleCancelUsuario = () => {
-  showNovoUsuarioModal.value = false
-  modalError.value = null
+const handleUsuarioCriado = () => {
+  console.log('Usuário criado com sucesso! Recarregando lista...')
+  // Emitir evento para a página principal recarregar os dados
+  emit('usuario-criado')
 }
 </script>
