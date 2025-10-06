@@ -153,6 +153,22 @@
         <BriefcaseIcon class="w-5 h-5 flex-shrink-0" :class="isCollapsed ? '' : 'mr-3'" />
         <span v-if="!isCollapsed" class="transition-opacity duration-200">Profissionais</span>
       </NuxtLink>
+
+      <!-- Admin (só para admins) -->
+      <NuxtLink
+        v-if="isAdmin"
+        to="/admin"
+        :class="[
+          'flex items-center px-3 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors',
+          isCollapsed ? 'justify-center' : '',
+          'group'
+        ]"
+        active-class="bg-blue-100 text-blue-800"
+        :title="isCollapsed ? 'Admin' : ''"
+      >
+        <CogIcon class="w-5 h-5 flex-shrink-0" :class="isCollapsed ? '' : 'mr-3'" />
+        <span v-if="!isCollapsed" class="transition-opacity duration-200">Admin</span>
+      </NuxtLink>
     </nav>
 
     <!-- User Menu Dropdown -->
@@ -163,14 +179,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuth } from '../../composables/useAuth'
+import { useProfileStore } from '../../stores/useProfileStore'
 import {
   HomeIcon,
   FolderIcon,
   CalendarDaysIcon,
   UsersIcon,
   BriefcaseIcon,
+  CogIcon,
   ChevronLeftIcon,
   ChevronDownIcon
 } from '@heroicons/vue/24/outline'
@@ -183,10 +201,21 @@ const emit = defineEmits<{
 
 // Auth composable
 const { user, logout } = useAuth()
+const profileStore = useProfileStore()
+
+// Computed para verificar se é admin
+const isAdmin = computed(() => profileStore.currentProfile?.role === 'admin')
 
 // Sidebar state
 const isCollapsed = ref(false)
 const isAgendamentosSubmenuOpen = ref(false)
+
+// Buscar perfil ao montar
+onMounted(async () => {
+  if (user.value) {
+    await profileStore.fetchProfileByUserId(user.value.id)
+  }
+})
 
 // Toggle sidebar function
 const toggleSidebar = () => {

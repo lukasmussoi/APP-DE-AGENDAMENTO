@@ -11,29 +11,39 @@
     <!-- Debug Info -->
     <div class="bg-gray-100 p-4 mb-4 rounded">
       <h3>Debug Info:</h3>
-      <p><strong>User:</strong> {{ user ? user.id : 'Não logado' }}</p>
-      <p><strong>Profile Loading:</strong> {{ profileStore.loading }}</p>
-      <p><strong>Profile Error:</strong> {{ profileStore.error }}</p>
-      <p><strong>Current Profile:</strong> {{ profileStore.currentProfile }}</p>
+      <client-only>
+        <p><strong>User:</strong> {{ user ? user.id : 'Não logado' }}</p>
+        <p><strong>Profile Loading:</strong> {{ profileStore.loading }}</p>
+        <p><strong>Profile Error:</strong> {{ profileStore.error }}</p>
+        <p><strong>Current Profile:</strong> {{ profileStore.currentProfile }}</p>
+        <template #fallback>
+          <p>Carregando informações...</p>
+        </template>
+      </client-only>
     </div>
     
     <!-- Status do Profile -->
-    <div v-if="profileStore.loading">
-      <p>Carregando perfil...</p>
-    </div>
-    <div v-else-if="profileStore.currentProfile">
-      <p>Bem-vindo, <strong>{{ profileStore.currentProfile.nome }}</strong>!</p>
-      <p>Role: {{ profileStore.currentProfile.role }}</p>
-    </div>
-    <div v-else-if="profileStore.error">
-      <p>Erro: {{ profileStore.error }}</p>
-    </div>
-    <div v-else>
-      <p>Nenhum perfil encontrado</p>
-      <button @click="forceLoadProfile" class="bg-blue-500 text-white px-4 py-2 rounded">
-        Tentar Carregar Perfil Manualmente
-      </button>
-    </div>
+    <client-only>
+      <div v-if="profileStore.loading">
+        <p>Carregando perfil...</p>
+      </div>
+      <div v-else-if="profileStore.currentProfile">
+        <p>Bem-vindo, <strong>{{ profileStore.currentProfile.nome }}</strong>!</p>
+        <p>Role: {{ profileStore.currentProfile.role }}</p>
+      </div>
+      <div v-else-if="profileStore.error">
+        <p>Erro: {{ profileStore.error }}</p>
+      </div>
+      <div v-else>
+        <p>Nenhum perfil encontrado</p>
+        <button @click="forceLoadProfile" class="bg-blue-500 text-white px-4 py-2 rounded">
+          Tentar Carregar Perfil Manualmente
+        </button>
+      </div>
+      <template #fallback>
+        <p>Carregando perfil...</p>
+      </template>
+    </client-only>
   </div>
 </template>
 
@@ -58,12 +68,14 @@ const forceLoadProfile = async () => {
 }
 
 // Log inicial para debug
-console.log('Página carregada - User:', user.value)
-console.log('Profile store state:', {
-  loading: profileStore.loading,
-  currentProfile: profileStore.currentProfile,
-  error: profileStore.error
-})
+if (process.client) {
+  console.log('Página carregada - User:', user.value)
+  console.log('Profile store state:', {
+    loading: profileStore.loading,
+    currentProfile: profileStore.currentProfile,
+    error: profileStore.error
+  })
+}
 
 // Layout é aplicado automaticamente pelo Nuxt 4
 </script>

@@ -224,10 +224,12 @@ const isDeleting = ref(false)
 
 // Buscar dados ao montar a página
 onMounted(async () => {
-  await Promise.all([
-    fetchProfissionais(),
-    fetchDadosAdmin()
-  ])
+  await fetchProfissionais()
+  
+  // Só buscar dados admin se o usuário for admin
+  if (profileStore.currentProfile?.role === 'admin') {
+    await fetchDadosAdmin()
+  }
 })
 
 // Handlers do modal

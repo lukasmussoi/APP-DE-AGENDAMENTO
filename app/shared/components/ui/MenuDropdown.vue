@@ -21,7 +21,12 @@
       </div>
       <div v-if="!props.isCollapsed" class="flex-1 min-w-0 text-left">
         <p class="text-sm font-medium text-gray-900 truncate">
-          {{ userName }}
+          <client-only>
+            {{ userName }}
+            <template #fallback>
+              Carregando...
+            </template>
+          </client-only>
         </p>
         <p class="text-xs text-gray-500 truncate">
           {{ userEmail }}
