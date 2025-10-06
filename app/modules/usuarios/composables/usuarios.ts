@@ -4,7 +4,7 @@
  * USADO_POR: páginas de profissionais, clientes, agendamentos
  */
 
-import type { UsuarioAuth, Perfil, ProfissionalCadastrado, EspecialidadeDisponivel, RpcResponseDadosAdmin } from '../types/usuarios.types'
+import type { UsuarioAuth, Perfil, ProfissionalCadastrado, EspecialidadeDisponivel, RpcResponseDadosAdmin, UsuarioListaAdmin, RpcResponseListaUsuarios } from '../types/usuarios.types'
 import { useProfileStore } from '../../../shared/stores/useProfileStore'
 
 export const useUsuarios = () => {
@@ -16,6 +16,7 @@ export const useUsuarios = () => {
   const profissionaisCadastrados = ref<ProfissionalCadastrado[]>([])
   const especialidadesDisponiveis = ref<EspecialidadeDisponivel[]>([])
   const usuarios = ref<UsuarioAuth[]>([])
+  const usuariosLista = ref<UsuarioListaAdmin[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -103,6 +104,59 @@ export const useUsuarios = () => {
    */
   const fetchPerfisBasic = async (): Promise<void> => {
     await fetchDadosAdmin()
+  }
+
+  /**
+   * Busca lista de usuários para administração
+   */
+  const fetchUsuariosAdmin = async (): Promise<void> => {
+    // Verificar se o usuário é admin
+    if (profileStore.currentProfile?.role !== 'admin') {
+      throw new Error('Acesso negado')
+    }
+
+    loading.value = true
+    error.value = null
+
+    try {
+      const { data: rpcData, error: rpcError } = await supabase
+        .rpc('ag_listar_usuarios_admin')
+
+      if (rpcError) {
+        throw new Error(`Erro na RPC: ${rpcError.message}`)
+      }
+
+      if (!rpcData) {
+        throw new Error('Nenhum dado retornado pela RPC')
+      }
+
+      // Processar resposta da RPC
+      let response = null
+      const data = rpcData as any
+      
+      // Tentar formato direto primeiro (atual)
+      if (data && data.success !== undefined) {
+        response = data
+      } 
+      // Fallback para formato array com objeto aninhado
+      else if (Array.isArray(data) && data.length > 0) {
+        response = data[0]?.ag_listar_usuarios_admin
+      }
+
+      if (!response || !response.success) {
+        throw new Error(response?.message || 'Falha ao buscar usuários')
+      }
+
+      // Atualizar estado reativo
+      usuariosLista.value = response.data || []
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+      error.value = errorMessage
+      console.error('Erro ao buscar usuários admin:', errorMessage)
+    } finally {
+      loading.value = false
+    }
   }
 
   /**
@@ -314,6 +368,7 @@ export const useUsuarios = () => {
     profissionaisCadastrados: readonly(profissionaisCadastrados),
     especialidadesDisponiveis: readonly(especialidadesDisponiveis),
     usuarios: readonly(usuarios),
+    usuariosLista: readonly(usuariosLista),
     loading: readonly(loading),
     error: readonly(error),
 
@@ -324,6 +379,7 @@ export const useUsuarios = () => {
 
     // Ações
     fetchDadosAdmin,
+    fetchUsuariosAdmin,
     fetchPerfis,
     fetchProfissionais,
     fetchEspecialidades,

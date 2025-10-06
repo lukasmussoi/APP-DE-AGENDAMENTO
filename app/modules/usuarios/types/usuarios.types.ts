@@ -78,6 +78,19 @@ export interface RpcResponseDadosAdmin {
   success: boolean
 }
 
+// Tipos para listagem de usuários admin
+export interface UsuarioListaAdmin {
+  id: number
+  nome: string
+  role: 'admin' | 'user'
+}
+
+export interface RpcResponseListaUsuarios {
+  data: UsuarioListaAdmin[]
+  message: string
+  success: boolean
+}
+
 // Manter compatibilidade com a resposta anterior
 export interface RpcResponsePerfis {
   data: Perfil[]
