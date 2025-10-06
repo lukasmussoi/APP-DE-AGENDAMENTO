@@ -1,42 +1,67 @@
 # GitHub Copilot Instructions - Estrutura Modular Nuxt 4
 
+⚠️ **Atenção**  
+Este documento é um **guia baseado em boas práticas e na documentação oficial**.  
+**Sempre siga as orientações do desenvolvedor responsável pelo projeto.**  
+Não é uma regra imutável — serve como referência para manter consistência, legibilidade e escalabilidade.
+
+---
+
 ## Estrutura de Pastas Obrigatória
 
-SEMPRE organize o código seguindo esta estrutura modular dentro de `app/`:
+SEMPRE organize o código seguindo esta estrutura modular:
 
 ### Estrutura Básica
 ```
-app/
-├── modules/[nome-do-modulo]/
-│   ├── components/              # Componentes específicos do módulo
-│   ├── composables/             # Lógica reativa do módulo
-│   ├── types/                   # Tipos TypeScript do módulo
-│   ├── utils/                   # Utilitários específicos do módulo
-│   ├── stores/                  # Stores específicos do módulo (se necessário)
-│   └── index.ts                 # Export barrel do módulo
+my-nuxt-app/
+├── app/
+│   ├── modules/[nome-do-modulo]/
+│   │   ├── components/              # Componentes específicos do módulo
+│   │   ├── composables/             # Lógica reativa do módulo
+│   │   ├── types/                   # Tipos TypeScript do módulo
+│   │   ├── utils/                   # Utilitários específicos do módulo
+│   │   ├── stores/                  # Stores específicos do módulo (se necessário)
+│   │   └── index.ts                 # Export barrel do módulo
+│   ├── shared/
+│   │   ├── components/
+│   │   │   ├── ui/                  # Componentes base (Button, Input, Modal)
+│   │   │   ├── layout/              # Header, Sidebar, Footer
+│   │   │   ├── forms/               # Componentes de formulário reutilizáveis
+│   │   │   ├── tables/              # Componentes de tabela reutilizáveis
+│   │   │   └── common/              # LoadingSpinner, ErrorMessage
+│   │   ├── composables/
+│   │   │   ├── api/                 # Composables de API
+│   │   │   ├── ui/                  # Composables de UI
+│   │   │   └── business/            # Regras de negócio globais
+│   │   ├── types/
+│   │   │   ├── entities/            # Entidades principais do sistema
+│   │   │   ├── api/                 # Tipos de API
+│   │   │   └── ui/                  # Tipos de UI
+│   │   ├── utils/                   # Utilitários globais
+│   │   └── stores/                  # Stores Pinia globais
+│   ├── assets/                      # fontes, ícones, imagens processadas, CSS global
+│   ├── components/                  # componentes de UI (pequenos, reusáveis, sem lógica de dados)
+│   ├── composables/                 # funções reativas (useX) e estados compartilhados (useState)
+│   ├── layouts/                     # layouts de páginas (header/footer etc.)
+│   ├── middleware/                  # middlewares de rota (auth, guards, etc.)
+│   ├── pages/                       # rotas baseadas em arquivos
+│   ├── plugins/                     # registros de libs (client/server), injeções de dependência
+│   ├── utils/                       # funções puras e helpers sem reatividade
+│   ├── app.vue                      # shell do app
+│   ├── app.config.ts                # configurações do app
+│   └── error.vue                    # página de erro global
+├── content/                         # opcional - conteúdo estático/MD
+├── public/                          # arquivos estáticos servidos como raiz (/)
 ├── shared/
-│   ├── components/
-│   │   ├── ui/                  # Componentes base (Button, Input, Modal)
-│   │   ├── layout/              # Header, Sidebar, Footer
-│   │   ├── forms/               # Componentes de formulário reutilizáveis
-│   │   ├── tables/              # Componentes de tabela reutilizáveis
-│   │   └── common/              # LoadingSpinner, ErrorMessage
-│   ├── composables/
-│   │   ├── api/                 # Composables de API
-│   │   ├── ui/                  # Composables de UI
-│   │   └── business/            # Regras de negócio globais
-│   ├── types/
-│   │   ├── entities/            # Entidades principais do sistema
-│   │   ├── api/                 # Tipos de API
-│   │   └── ui/                  # Tipos de UI
-│   ├── utils/                   # Utilitários globais
-│   └── stores/                  # Stores Pinia globais
-├── pages/                       # Rotas da aplicação
-├── layouts/                     # Layouts globais
-├── middleware/                  # Middleware global
-├── plugins/                     # Plugins globais
-├── server/api/                  # API routes
-└── assets/                      # Assets estáticos
+│   ├── types/                       # tipos globais TypeScript (contratos, DTOs, entidades)
+│   └── constants/                   # constantes e enums globais
+├── server/
+│   ├── api/                         # rotas server (ex: server/api/users.get.ts)
+│   ├── middleware/                  # middlewares server-side Nitro
+│   └── plugins/                     # plugins server-side
+├── tailwind.config.ts               # tema e tokens de design
+├── nuxt.config.ts
+└── .env
 ```
 
 ### Estrutura para Módulos Complexos
@@ -49,7 +74,7 @@ app/modules/[nome-do-modulo]/
 ├── types/
 ├── utils/
 ├── stores/
-├── features/                    # Submódulos por funcionalidade
+├── features/                        # Submódulos por funcionalidade
 │   ├── [sub-funcionalidade-1]/
 │   │   ├── components/
 │   │   ├── composables/
@@ -61,6 +86,70 @@ app/modules/[nome-do-modulo]/
 └── index.ts
 ```
 
+> **Sobre `types`**  
+> - **Projetos pequenos** → pode manter em `app/types`.  
+> - **Projetos médios/grandes ou com backend** → prefira `shared/types` fora do `app/` para facilitar compartilhamento.
+
+---
+
+## Princípios de Arquitetura
+
+1. **Componentizar ao máximo**  
+   - Componentes pequenos, coesos e reusáveis.  
+   - Nada de lógica de dados dentro de componentes — use **composables**.
+
+2. **Composables para lógica de domínio**  
+   - `/app/composables/useX.ts` → busca de dados, regras de negócio, orquestração.  
+   - Componente apenas consome o composable.
+
+3. **Responsabilidade única**  
+   - Um arquivo faz **uma única coisa bem feita**. Se crescer, quebre.
+
+4. **Tipos corretos**  
+   - Sempre tipar props, emits, retornos, estados e contratos de API.  
+   - Evitar `any`; preferir tipagem explícita.
+
+5. **Sempre TypeScript**  
+   - `lang="ts"` nos componentes Vue.  
+   - Tipos globais no `/shared/types` ou `app/types`.
+
+6. **Padrão de camadas**  
+   - **UI (`components`)** → **Composables (`composables`)** → **Acesso a dados (`server/api` ou SDK)**.
+
+---
+
+## Regras de Nomenclatura
+
+- **Componentes Vue (`/app/components`)** → **PascalCase**  
+  Ex.: `UserCard.vue`, `AuthButton.vue`
+
+- **Páginas (`/app/pages`)** → **minúsculas sem traços**, usar apenas letras e, se necessário, subpastas para organizar  
+  Ex.: `login.vue`, `profile.vue`, `settings.vue`  
+  Se precisar separar por contexto:  
+  ```
+  /app/pages/admin/dashboard.vue
+  /app/pages/admin/users.vue
+  ```
+
+- **Layouts (`/app/layouts`)** → **PascalCase**  
+  Ex.: `DefaultLayout.vue`, `AdminLayout.vue`
+
+- **Composables (`/app/composables`)** → prefixo `use` + PascalCase  
+  Ex.: `useAuth.ts`, `useCart.ts`
+
+- **Middlewares (`/app/middleware`)** → camelCase  
+  Ex.: `authGuard.ts`, `isAdmin.ts`
+
+- **Utils (`/app/utils`)** → camelCase  
+  Ex.: `formatDate.ts`, `calculateTotal.ts`
+
+- **Tipos (`/shared/types` ou `app/types`)** → PascalCase para nomes de interfaces ou DTOs  
+  Ex.: `UserDTO.ts`, `ProductDTO.ts`
+
+**Sempre use imports explícitos para cada arquivo, evitando auto-imports.**
+
+---
+
 ## Regras de Organização
 
 1. **Módulos**: Quando criar funcionalidades relacionadas, SEMPRE criar dentro de `app/modules/[nome-modulo]/`
@@ -68,12 +157,16 @@ app/modules/[nome-do-modulo]/
 2. **Componentes**: 
    - Específicos do módulo → `app/modules/[nome-modulo]/components/`
    - Reutilizáveis globalmente → `app/shared/components/`
+   - Pequenos e sem lógica de dados → `app/components/`
 
 3. **Composables**: 
    - Específicos do módulo → `app/modules/[nome-modulo]/composables/`
    - Globais → `app/shared/composables/`
+   - Estados compartilhados → `app/composables/`
 
-4. **Types**: Sempre criar em `types/` dentro do respectivo módulo ou shared
+4. **Types**: 
+   - Módulo específico → `app/modules/[nome-modulo]/types/`
+   - Globais → `shared/types/` ou `app/types/`
 
 5. **Export Barrel**: Todo módulo deve ter um `index.ts` para facilitar imports
 
@@ -94,7 +187,9 @@ app/modules/[nome-do-modulo]/
    - Use stores compartilhados quando necessário
    - Evite imports diretos entre módulos
 
-## Mantenha o IMPORT EXPLÍCITO COMO PADRÃO
+**NUNCA crie módulos sem que seja explicitamente solicitado. SEMPRE pergunte qual módulo criar quando não estiver claro.**
+
+---
 
 ## Configuração Auto-Import
 
@@ -133,34 +228,26 @@ export default defineNuxtConfig({
 - Tipos ficando difíceis de encontrar
 - Composables com responsabilidades muito diferentes
 
-## Padrões de Nomenclatura
+**Para sistemas complexos**: Avalie automaticamente a necessidade de subdivisão baseada nos critérios acima e sugira melhorias na organização quando necessário.
 
-- Pastas: kebab-case (`user-management`, `auth-system`)
-- Componentes: PascalCase (`UserCard.vue`, `LoginForm.vue`)
-- Composables: camelCase com prefixo `use` (`useAuth.ts`, `useUserData.ts`)
-- Types: PascalCase com sufixo `.types.ts` (`user.types.ts`)
+---
 
-NUNCA crie módulos sem que seja explicitamente solicitado. SEMPRE pergunte qual módulo criar quando não estiver claro.
+## Padrões de Código
 
-## Exemplo de Import Explícito
+- **Pastas de módulos**: kebab-case (`user-management`, `auth-system`)
+- **Componentes**: PascalCase (`UserCard.vue`, `LoginForm.vue`)
+- **Composables**: camelCase com prefixo `use` (`useAuth.ts`, `useUserData.ts`)
+- **Types**: PascalCase com sufixo `.types.ts` (`user.types.ts`)
 
-Import: usar import explícito sempre (requisito do projeto).
-Exemplo:
-```javascript
-// Importando de módulo específico
-import { UserCard, UserForm } from '~/app/modules/user-management'
-import { useAuth } from '~/app/modules/auth-system/composables'
+**NUNCA crie módulos sem que seja explicitamente solicitado. SEMPRE pergunte qual módulo criar quando não estiver claro.**
 
-// Importando de shared
-import { Button, Modal } from '~/app/shared/components/ui'
-import { useApi } from '~/app/shared/composables'
-```
+---
 
 ## Stack Tecnológica
 
-- Tech Stack: `Nuxt 4` (Vue 3) + `Tailwind CSS`
-- Regra principal: componentize tudo — sem HTML inline em páginas/templates
-- Commits: o agente NUNCA deve executar commits/push. Todo push é feito pelo desenvolvedor via SSH
+- **Nuxt 4** (Vue 3) + **Tailwind CSS**
+- **Regra principal**: componentize tudo — sem HTML inline em páginas/templates
+- **Commits**: o agente NUNCA deve executar commits/push sem autorização explícita do desenvolvedor
 
 ## Cabeçalho de arquivo (obrigatório)
 Todos os arquivos iniciam com 3–6 linhas:
@@ -187,17 +274,13 @@ Todos os arquivos iniciam com 3–6 linhas:
   npm run preview
   ```
 
-## Tailwind (prático)
-- CSS principal: `app/assets/css/main.css` com:
-  ```css
-  @import "tailwindcss";
-  ```
+## Tailwind (configuração)
+- CSS principal: `app/assets/css/main.css`
 - `tailwind.config.js`: aponte `content` para `app/**/*.{vue,js,ts}` e outras pastas relevantes.
 
 ## Política Git (obrigatória)
-- Agente pode sugerir mensagens, diffs e comandos, mas NÃO executar `git` automaticamente
-- **EXCETO**: Quando explicitamente solicitado pelo desenvolvedor - nesse caso DEVE executar
-- Desenvolvedor deve configurar remote via SSH e executar commits/push quando não solicitado ao agente:
+- **Regra**: Agente só executa comandos Git/GitHub quando **explicitamente solicitado pelo desenvolvedor**
+- Desenvolvedor deve configurar remote via SSH e executar commits/push quando necessário:
   ```powershell
   git remote set-url origin git@github.com:<owner>/<repo>.git
   git checkout -b feature/minha-mudanca
@@ -205,7 +288,6 @@ Todos os arquivos iniciam com 3–6 linhas:
   git commit -m "descrição: motivo"
   git push -u origin feature/minha-mudanca
   ```
-- **Regra**: Se o usuário pedir explicitamente para executar comandos Git/GitHub, o agente DEVE fazer
 
 ## MCP Context7 (obrigatório ao perder contexto / iniciar chat)
 - **SEMPRE** consultar documentação atualizada de TODAS as tecnologias ativas no sistema
@@ -222,7 +304,22 @@ Todos os arquivos iniciam com 3–6 linhas:
   - TypeScript: `mcp_context7_get-library-docs("[typescript-id]", topic="types" | "configuration")`
   - Pinia (se encontrado): `mcp_context7_get-library-docs("[pinia-id]", topic="stores" | "composition")`
 
-- **Regra crítica**: NUNCA implementar sem consultar Context7 - isso evita decisões baseadas em conhecimento desatualizado e "cagadas"
+- **Regra crítica**: NUNCA implementar sem consultar Context7 - isso evita decisões baseadas em conhecimento desatualizado
+
+## Gerenciamento de Arquivos
+
+**Política de Remoção de Arquivos (OBRIGATÓRIA):**
+- **NUNCA delete arquivos diretamente** por qualquer motivo
+- **SEMPRE siga este fluxo para "remover" arquivos:**
+  1. Criar diretório `.lixo` na raiz do projeto (se não existir)
+  2. Mover o arquivo para `.lixo/`
+  3. Renomear para `OLD-NOMEDOARQUIVO` (ex: `OLD-Header.vue`, `OLD-useAuth.ts`)
+- **Motivo:** Preservar histórico e permitir consulta posterior se necessário
+- **Exemplo de comandos:**
+  ```bash
+  mkdir .lixo
+  mv app/components/Header.vue .lixo/OLD-Header.vue
+  ```
 
 ## Pontos de atenção rápidos
 - Use UTC no backend; converta no frontend
