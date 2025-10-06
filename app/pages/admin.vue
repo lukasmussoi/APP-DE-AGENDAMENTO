@@ -20,6 +20,11 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 
+// Definir middleware para esta página
+definePageMeta({
+  middleware: 'admin-only'
+})
+
 // Verificar se usuário é admin ao carregar a página
 onMounted(async () => {
   const user = useSupabaseUser()

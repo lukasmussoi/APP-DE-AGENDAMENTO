@@ -147,6 +147,24 @@ export const useAuth = () => {
     }
   }
 
+  // Função para verificar se o usuário é admin
+  const isAdmin = async (): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.rpc('ag_is_admin')
+
+      if (error) {
+        console.error('Erro ao verificar se é admin:', error)
+        return false
+      }
+
+      // A RPC retorna [{ ag_is_admin: { isadmin: boolean } }]
+      return (data as any)?.[0]?.ag_is_admin?.isadmin === true
+    } catch (err) {
+      console.error('Erro inesperado ao verificar admin:', err)
+      return false
+    }
+  }
+
   return {
     // Estado
     user,
@@ -160,5 +178,6 @@ export const useAuth = () => {
     resetPassword,
     updatePassword,
     updateEmail,
+    isAdmin,
   }
 }
