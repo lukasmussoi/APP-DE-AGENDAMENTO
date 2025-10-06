@@ -70,18 +70,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { toast } from 'vue3-toastify'
 
 // Importar componentes UI reutilizáveis
 import Input from '~/shared/components/ui/Input.vue'
 import Button from '~/shared/components/ui/Button.vue'
 
-// Importar composable de usuários
+// Importar composables e stores
 import { useUsuarios } from '../composables/usuarios'
+import { useAuth } from '~/shared/composables/useAuth'
+import { useProfileStore } from '~/shared/stores/useProfileStore'
 
-// Usar composable
-const { updateUserName, updateUserEmail, updateUserPassword } = useUsuarios()
+// Usar composables e stores
+const { updateUserName, updateUserPassword } = useUsuarios()
+const { updateEmail, user } = useAuth()
+const profileStore = useProfileStore()
 
 // Estado reativo para os campos
 const nome = ref('')
@@ -91,6 +95,19 @@ const confirmarSenha = ref('')
 
 // Estado para feedback
 const isSubmitting = ref(false)
+
+// Carregar dados iniciais quando o componente for montado
+onMounted(() => {
+  // Carregar nome do perfil (Pinia store)
+  if (profileStore.currentProfile?.nome) {
+    nome.value = profileStore.currentProfile.nome
+  }
+  
+  // Carregar email do usuário autenticado
+  if (user.value?.email) {
+    email.value = user.value.email
+  }
+})
 
 // Função de submit
 const handleSubmit = async () => {
@@ -120,7 +137,10 @@ const handleSubmit = async () => {
     // Atualizar email se preenchido
     if (email.value) {
       console.log('Atualizando email:', email.value)
-      await updateUserEmail(email.value)
+      const result = await updateEmail(email.value)
+      if (!result.success) {
+        throw new Error(result.error || 'Erro ao atualizar email')
+      }
       console.log('Email atualizado com sucesso')
     }
 

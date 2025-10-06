@@ -122,6 +122,31 @@ export const useAuth = () => {
     }
   }
 
+  // Função para atualizar email do usuário
+  const updateEmail = async (newEmail: string) => {
+    try {
+      isLoading.value = true
+      error.value = null
+
+      const { data, error: updateError } = await supabase.auth.updateUser({
+        email: newEmail
+      })
+
+      if (updateError) {
+        error.value = updateError.message
+        return { success: false, error: updateError.message }
+      }
+
+      return { success: true, data }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro desconhecido'
+      error.value = message
+      return { success: false, error: message }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     // Estado
     user,
@@ -134,5 +159,6 @@ export const useAuth = () => {
     logout,
     resetPassword,
     updatePassword,
+    updateEmail,
   }
 }
